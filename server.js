@@ -1,6 +1,3 @@
-Hier ist der komplette Code — alles markieren und kopieren:
-
-```javascript
 const express = require('express');
 const cors = require('cors');
 const Imap = require('imap');
