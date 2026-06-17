@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#185FA5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bewerbungs-App">
+<title>Bewerbungs-Assistent</title>
+<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiQmV3ZXJidW5ncy1Bc3Npc3RlbnQiLCJzaG9ydF9uYW1lIjoiQmV3ZXJidW5nIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzE4NUZBNSIsInRoZW1lX2NvbG9yIjoiIzE4NUZBNSIsInN0YXJ0X3VybCI6Ii4iLCJpY29ucyI6W3sic3JjIjoiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCd2NtVnpaWEoyWlVGemNHeGhZMlUyTUhzZ1kyeGhjM005SW1WdVlXSnNaU0lnWTJ4aGMzTTlJbXh2WTJGc0lpQjRiV3h1Y3owaWFIUjBjRG92TDNkM2R5NTNNeTV2Y21jdmRqRXZjMlZ5ZG1WeUlpQjRiV3h1Y3owaWFIUjBjRG92TDNkM2R5NTNNeTV2Y21jdmRqRXZjSE5wZEdWa0lqNDhjM1I1YkdVK0xtcHZiMjRnZW1odmJTQnBiblJsY201aGJDMXphWHBsT2pBeU1BcHdiR0Y0T2pJd0NIUmxlSFF0WW14dllXUTZJakV0TVRndE5UQXRJSHR3Y21VdFpXNWhZbXhsWkMxc2IyZHZPakl3ZlR3dmMzUjViR1UrUEM5emRtYysiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCIsInNpemVzIjoiMTkyeDE5MiJ9XX0=">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --blue: #185FA5;
+    --blue-light: #2176c7;
+    --blue-dark: #0f4070;
+    --green: #3B6D11;
+    --green-light: #4d8f17;
+    --bg: #f0f4f8;
+    --card: #ffffff;
+    --text: #1a1a2e;
+    --text-muted: #666;
+    --border: #dde3ea;
+    --nav-bg: #ffffff;
+    --input-bg: #f7f9fc;
+    --shadow: 0 2px 12px rgba(24,95,165,0.10);
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+  body.dark {
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --text: #e8eaf0;
+    --text-muted: #8a8fa8;
+    --border: #2a2d3a;
+    --nav-bg: #13161f;
+    --input-bg: #22263a;
+    --shadow: 0 2px 12px rgba(0,0,0,0.40);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    overflow-x: hidden;
+    transition: background 0.2s, color 0.2s;
+  }
+  /* TOP NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: var(--nav-bg);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 1px 8px rgba(0,0,0,0.07);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 12px;
+    height: 56px;
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 8px;
+    font-weight: 700; font-size: 17px; color: var(--blue);
+  }
+  .nav-logo svg { width: 28px; height: 28px; }
+  .nav-actions { display: flex; align-items: center; gap: 6px; }
+  .icon-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted); padding: 8px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; transition: background 0.15s, color 0.15s;
+  }
+  .icon-btn:hover { background: var(--border); color: var(--blue); }
+  /* BOTTOM TAB BAR */
+  .tab-bar {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+    background: var(--nav-bg);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .tab-btn {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 3px; padding: 8px 0 6px;
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted); font-size: 10px; font-weight: 500;
+    transition: color 0.15s; -webkit-tap-highlight-color: transparent;
+  }
+  .tab-btn svg { width: 22px; height: 22px; }
+  .tab-btn.active { color: var(--blue); }
+  .tab-btn.active svg { stroke: var(--blue); }
+  /* PAGES */
+  .page { display: none; padding: 68px 0 90px; min-height: 100dvh; }
+  .page.active { display: block; }
+  .page-inner { padding: 0 16px; max-width: 600px; margin: 0 auto; }
+  /* CARDS */
+  .card {
+    background: var(--card); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 18px;
+    margin-bottom: 14px; border: 1px solid var(--border);
+  }
+  .card-title {
+    font-size: 13px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 12px;
+  }
+  /* BUTTONS */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 7px; border: none; border-radius: var(--radius-sm);
+    font-size: 15px; font-weight: 600; cursor: pointer;
+    padding: 11px 18px; transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-primary { background: var(--blue); color: #fff; }
+  .btn-primary:hover { background: var(--blue-light); }
+  .btn-primary:active { background: var(--blue-dark); transform: scale(0.97); }
+  .btn-green { background: var(--green); color: #fff; }
+  .btn-green:hover { background: var(--green-light); }
+  .btn-outline {
+    background: transparent; color: var(--blue);
+    border: 1.5px solid var(--blue);
+  }
+  .btn-outline:hover { background: rgba(24,95,165,0.08); }
+  .btn-danger { background: #c0392b; color: #fff; }
+  .btn-sm { padding: 7px 13px; font-size: 13px; }
+  .btn-full { width: 100%; }
+  /* INPUTS */
+  input, textarea, select {
+    width: 100%; padding: 11px 13px;
+    background: var(--input-bg); border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 15px; color: var(--text);
+    font-family: inherit; transition: border-color 0.15s;
+    outline: none;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--blue); }
+  textarea { resize: vertical; min-height: 100px; }
+  label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; }
+  .form-group { margin-bottom: 14px; }
+  /* HOME PAGE */
+  .home-hero {
+    background: linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%);
+    border-radius: var(--radius); padding: 28px 20px;
+    color: #fff; margin-bottom: 18px; position: relative; overflow: hidden;
+  }
+  .home-hero::after {
+    content: ''; position: absolute; right: -20px; top: -20px;
+    width: 120px; height: 120px; border-radius: 50%;
+    background: rgba(255,255,255,0.07);
+  }
+  .home-hero h1 { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+  .home-hero p { font-size: 14px; opacity: 0.85; line-height: 1.5; }
+  .stat-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 18px; }
+  .stat-card {
+    background: var(--card); border-radius: var(--radius); padding: 14px 10px;
+    text-align: center; border: 1px solid var(--border); box-shadow: var(--shadow);
+  }
+  .stat-num { font-size: 26px; font-weight: 800; color: var(--blue); }
+  .stat-label { font-size: 11px; color: var(--text-muted); font-weight: 500; margin-top: 2px; }
+  .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+  .quick-card {
+    background: var(--card); border-radius: var(--radius);
+    padding: 16px; border: 1px solid var(--border); box-shadow: var(--shadow);
+    cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+    -webkit-tap-highlight-color: transparent; transition: transform 0.12s;
+  }
+  .quick-card:active { transform: scale(0.97); }
+  .quick-card .icon { font-size: 26px; }
+  .quick-card h3 { font-size: 14px; font-weight: 700; color: var(--text); }
+  .quick-card p { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+  /* EMAIL PAGE */
+  .email-list { display: flex; flex-direction: column; gap: 10px; }
+  .email-item {
+    background: var(--card); border-radius: var(--radius);
+    padding: 14px 16px; border: 1px solid var(--border);
+    box-shadow: var(--shadow); cursor: pointer; transition: border-color 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .email-item:active { border-color: var(--blue); }
+  .email-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .email-sender { font-size: 14px; font-weight: 700; }
+  .email-date { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+  .email-subject { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+  .email-badge {
+    display: inline-block; font-size: 10px; font-weight: 700;
+    padding: 2px 8px; border-radius: 20px; margin-top: 6px;
+  }
+  .badge-ams { background: rgba(59,109,17,0.15); color: var(--green); }
+  .badge-job { background: rgba(24,95,165,0.15); color: var(--blue); }
+  .badge-other { background: rgba(120,120,120,0.12); color: var(--text-muted); }
+  .empty-state {
+    text-align: center; padding: 48px 20px; color: var(--text-muted);
+  }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+  .empty-state p { font-size: 14px; line-height: 1.5; }
+  /* BEWERBUNG MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.55); align-items: flex-end;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--card); border-radius: 22px 22px 0 0;
+    width: 100%; max-height: 92dvh; overflow-y: auto;
+    padding: 20px 18px 32px;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-handle {
+    width: 36px; height: 4px; background: var(--border);
+    border-radius: 2px; margin: 0 auto 18px;
+  }
+  .modal-title { font-size: 18px; font-weight: 800; margin-bottom: 16px; }
+  /* UNTERLAGEN */
+  .docs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .doc-card {
+    background: var(--card); border-radius: var(--radius);
+    border: 1px solid var(--border); box-shadow: var(--shadow);
+    padding: 16px; display: flex; flex-direction: column; align-items: center;
+    gap: 8px; text-align: center; position: relative;
+  }
+  .doc-icon { font-size: 32px; }
+  .doc-name { font-size: 13px; font-weight: 700; color: var(--text); word-break: break-word; }
+  .doc-size { font-size: 11px; color: var(--text-muted); }
+  .doc-badge {
+    position: absolute; top: 8px; right: 8px;
+    background: var(--green); color: #fff;
+    font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 20px;
+  }
+  .doc-actions { display: flex; gap: 6px; margin-top: 4px; }
+  .upload-zone {
+    border: 2px dashed var(--border); border-radius: var(--radius);
+    padding: 32px 20px; text-align: center; cursor: pointer;
+    transition: border-color 0.15s; color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+  .upload-zone:hover, .upload-zone.drag { border-color: var(--blue); color: var(--blue); }
+  .upload-zone .icon { font-size: 36px; margin-bottom: 8px; }
+  .upload-zone h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .upload-zone p { font-size: 13px; }
+  /* SETTINGS */
+  .settings-group { margin-bottom: 20px; }
+  .settings-row {
+    background: var(--card); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; margin-bottom: 1px;
+  }
+  .settings-row:first-child { border-radius: var(--radius) var(--radius) 0 0; }
+  .settings-row:last-child { border-radius: 0 0 var(--radius) var(--radius); }
+  .settings-row:only-child { border-radius: var(--radius); }
+  .settings-label { font-size: 15px; font-weight: 500; }
+  .settings-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  /* TOGGLE */
+  .toggle { position: relative; width: 48px; height: 28px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; inset: 0; background: var(--border);
+    border-radius: 28px; cursor: pointer; transition: background 0.2s;
+  }
+  .toggle-slider::before {
+    content: ''; position: absolute; left: 3px; top: 3px;
+    width: 22px; height: 22px; background: #fff; border-radius: 50%;
+    transition: transform 0.2s; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+  .toggle input:checked + .toggle-slider { background: var(--blue); }
+  .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+  /* QR PAGE */
+  .qr-container {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 20px; padding: 20px 0;
+  }
+  #qr-code { background: #fff; padding: 16px; border-radius: var(--radius); }
+  .qr-url {
+    font-size: 13px; color: var(--text-muted); text-align: center;
+    word-break: break-all; padding: 0 20px;
+  }
+  /* AI LOADING */
+  .ai-loading {
+    display: flex; align-items: center; gap: 10px;
+    color: var(--blue); font-size: 14px; padding: 12px 0;
+  }
+  .ai-spinner {
+    width: 20px; height: 20px; border: 2.5px solid var(--border);
+    border-top-color: var(--blue); border-radius: 50%;
+    animation: spin 0.8s linear infinite; flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  /* SECTION HEADING */
+  .section-heading {
+    font-size: 20px; font-weight: 800; margin: 6px 0 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  /* CHIP */
+  .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .chip {
+    padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    border: 1.5px solid var(--border); cursor: pointer; transition: all 0.12s;
+    background: var(--card); color: var(--text-muted);
+  }
+  .chip.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+  /* TTS bar */
+  .tts-bar {
+    background: var(--input-bg); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px 14px;
+    display: flex; align-items: center; gap: 10px; margin-top: 10px;
+  }
+  .tts-bar button {
+    background: none; border: none; cursor: pointer; font-size: 22px;
+    color: var(--blue); padding: 0;
+  }
+  .tts-label { font-size: 13px; color: var(--text-muted); flex: 1; }
+  /* Notification */
+  #toast {
+    position: fixed; top: 70px; left: 50%; transform: translateX(-50%) translateY(-80px);
+    background: #222; color: #fff; border-radius: var(--radius-sm);
+    padding: 11px 20px; font-size: 14px; z-index: 999;
+    transition: transform 0.25s ease; white-space: nowrap; pointer-events: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+  /* API KEY WARNING */
+  .api-warning {
+    background: rgba(24,95,165,0.1); border: 1.5px solid var(--blue);
+    border-radius: var(--radius-sm); padding: 12px 14px; font-size: 13px;
+    color: var(--blue); margin-bottom: 14px; line-height: 1.5;
+  }
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav>
+  <div class="nav-logo">
+    <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="28" height="28" rx="8" fill="#185FA5"/>
+      <path d="M7 9h14M7 14h10M7 19h8" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+      <circle cx="21" cy="19" r="3" fill="#3B6D11"/>
+    </svg>
+    <span id="nav-title">Bewerbungs-App</span>
+  </div>
+  <div class="nav-actions">
+    <button class="icon-btn" onclick="toggleDark()" title="Dark Mode">
+      <span id="dark-icon">🌙</span>
+    </button>
+    <button class="icon-btn" onclick="toggleLang()" title="Sprache">
+      <span id="lang-flag">🇩🇪</span>
+    </button>
+  </div>
+</nav>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- ====== PAGES ====== -->
+
+<!-- HOME -->
+<div id="page-home" class="page active">
+  <div class="page-inner">
+    <div class="home-hero">
+      <h1 id="hero-title">👋 Willkommen!</h1>
+      <p id="hero-sub">Dein KI-gestützter Bewerbungsassistent. Erstelle professionelle Bewerbungen mit Claude KI.</p>
+    </div>
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-num" id="stat-emails">0</div>
+        <div class="stat-label" id="stat-emails-label">E-Mails</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-docs">0</div>
+        <div class="stat-label" id="stat-docs-label">Unterlagen</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-sent">0</div>
+        <div class="stat-label" id="stat-sent-label">Gesendet</div>
+      </div>
+    </div>
+    <div class="quick-actions">
+      <div class="quick-card" onclick="showPage('emails')">
+        <div class="icon">📧</div>
+        <h3 id="qc1-title">E-Mails prüfen</h3>
+        <p id="qc1-sub">AMS & Stellenangebote anzeigen</p>
+      </div>
+      <div class="quick-card" onclick="openBewerbung()">
+        <div class="icon">✍️</div>
+        <h3 id="qc2-title">Neu bewerben</h3>
+        <p id="qc2-sub">KI erstellt dein Schreiben</p>
+      </div>
+      <div class="quick-card" onclick="showPage('unterlagen')">
+        <div class="icon">📁</div>
+        <h3 id="qc3-title">Unterlagen</h3>
+        <p id="qc3-sub">Lebenslauf & Zertifikate</p>
+      </div>
+      <div class="quick-card" onclick="showPage('qrcode')">
+        <div class="icon">📱</div>
+        <h3 id="qc4-title">QR-Code</h3>
+        <p id="qc4-sub">App mit anderen teilen</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" id="hint-title">💡 Hinweis</div>
+      <p id="hint-text" style="font-size:14px;line-height:1.6;">Gib deinen <strong>Claude API-Schlüssel</strong> in den Einstellungen ein, damit die KI Bewerbungsschreiben erstellen kann. Du bekommst ihn kostenlos auf <strong>console.anthropic.com</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- EMAILS -->
+<div id="page-emails" class="page">
+  <div class="page-inner">
+    <div class="section-heading">📧 <span id="emails-title">E-Mails</span></div>
+    <div class="chip-row">
+      <div class="chip active" onclick="filterEmails('all',this)" id="chip-all">Alle</div>
+      <div class="chip" onclick="filterEmails('ams',this)" id="chip-ams">AMS Wien</div>
+      <div class="chip" onclick="filterEmails('job',this)" id="chip-job">Stellenangebote</div>
+      <div class="chip" onclick="filterEmails('other',this)" id="chip-other">Sonstige</div>
+    </div>
+    <div id="email-list" class="email-list"></div>
+    <div style="margin-top:14px; display:flex; flex-direction:column; gap:8px;">
+      <button class="btn btn-primary btn-full" onclick="fetchEmailsFromServer()" id="fetch-btn">
+        📥 <span id="fetch-emails-btn">E-Mails vom Postfach laden</span>
+      </button>
+      <button class="btn btn-outline btn-full" onclick="addDemoEmail()">
+        📨 <span id="add-email-btn">Demo E-Mail hinzufügen</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- UNTERLAGEN -->
+<div id="page-unterlagen" class="page">
+  <div class="page-inner">
+    <div class="section-heading">📁 <span id="docs-title">Unterlagen</span></div>
+    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+      <div class="icon">📤</div>
+      <h3 id="upload-title">Datei hochladen</h3>
+      <p id="upload-sub">PDF, DOCX, JPG — tippen zum Auswählen</p>
+    </div>
+    <input type="file" id="file-input" style="display:none" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onchange="handleFileUpload(this)">
+    <div id="docs-grid" class="docs-grid"></div>
+  </div>
+</div>
+
+<!-- EINSTELLUNGEN -->
+<div id="page-einstellungen" class="page">
+  <div class="page-inner">
+    <div class="section-heading">⚙️ <span id="settings-title">Einstellungen</span></div>
+    <div class="settings-group">
+      <div class="card-title" id="s-ki">KI-Einstellungen</div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-label" id="s-apikey-label">Claude API-Schlüssel</div>
+          <div class="settings-sub" id="s-apikey-sub">Von console.anthropic.com</div>
+        </div>
+      </div>
+      <div style="padding:0 0 14px;">
+        <input type="password" id="api-key-input" placeholder="sk-ant-..." oninput="saveApiKey()">
+        <div style="margin-top:8px;">
+          <button class="btn btn-outline btn-sm" onclick="testApiKey()" id="test-btn">🧪 API testen</button>
+        </div>
+      </div>
+    </div>
+    <div class="settings-group">
+      <div class="card-title" id="s-email-title">E-Mail Konto</div>
+      <div class="card">
+        <div class="form-group">
+          <label id="s-email-label">E-Mail Adresse (GMX)</label>
+          <input type="email" id="email-addr" placeholder="name@gmx.at" oninput="saveSettings()">
+        </div>
+        <div class="form-group">
+          <label>GMX Passwort</label>
+          <input type="password" id="email-pass" placeholder="GMX Passwort" oninput="saveSettings()">
+        </div>
+        <div class="form-group">
+          <label id="s-name-label">Dein vollständiger Name</label>
+          <input type="text" id="user-name" placeholder="Max Mustermann" oninput="saveSettings()">
+        </div>
+        <div class="form-group">
+          <label id="s-addr-label">Adresse</label>
+          <input type="text" id="user-addr" placeholder="Musterstraße 1, 1010 Wien" oninput="saveSettings()">
+        </div>
+        <div class="form-group">
+          <label id="s-phone-label">Telefon</label>
+          <input type="tel" id="user-phone" placeholder="+43 664 1234567" oninput="saveSettings()">
+        </div>
+      </div>
+    </div>
+    <div class="settings-group">
+      <div class="card-title" id="s-app">App</div>
+      <div class="settings-row">
+        <div class="settings-label" id="s-dark-label">Dark Mode</div>
+        <label class="toggle">
+          <input type="checkbox" id="dark-toggle" onchange="toggleDarkFromSettings(this)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="settings-row">
+        <div class="settings-label" id="s-lang-label">Englisch</div>
+        <label class="toggle">
+          <input type="checkbox" id="lang-toggle" onchange="toggleLangFromSettings(this)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="settings-row">
+        <div class="settings-label" id="s-tts-label">Text-to-Speech</div>
+        <label class="toggle">
+          <input type="checkbox" id="tts-toggle" checked onchange="saveSettings()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+    <div class="settings-group">
+      <button class="btn btn-danger btn-full btn-sm" onclick="clearAll()" id="clear-btn">🗑️ Alle Daten löschen</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR CODE -->
+<div id="page-qrcode" class="page">
+  <div class="page-inner">
+    <div class="section-heading">📱 <span id="qr-title">QR-Code</span></div>
+    <div class="card">
+      <div class="qr-container">
+        <div id="qr-code"></div>
+        <div class="qr-url" id="qr-url-display"></div>
+        <button class="btn btn-primary" onclick="shareApp()" id="share-btn">
+          🔗 <span id="share-btn-text">App teilen</span>
+        </button>
+      </div>
+    </div>
+    <div class="card" id="install-card">
+      <div class="card-title" id="install-title">📲 App installieren</div>
+      <p id="install-text" style="font-size:14px;line-height:1.6;">
+        <strong>iPhone:</strong> Safari öffnen → Teilen-Symbol → "Zum Home-Bildschirm"<br><br>
+        <strong>Android:</strong> Chrome → Menü (⋮) → "App installieren"
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM TAB BAR -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showPage('home')" id="tab-home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+    <span id="tab-home-label">Home</span>
+  </button>
+  <button class="tab-btn" onclick="showPage('emails')" id="tab-emails">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+    </svg>
+    <span id="tab-emails-label">E-Mails</span>
+  </button>
+  <button class="tab-btn" onclick="showPage('unterlagen')" id="tab-unterlagen">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+    </svg>
+    <span id="tab-docs-label">Unterlagen</span>
+  </button>
+  <button class="tab-btn" onclick="showPage('einstellungen')" id="tab-einstellungen">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
+    <span id="tab-settings-label">Einstellungen</span>
+  </button>
+  <button class="tab-btn" onclick="showPage('qrcode')" id="tab-qrcode">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="3" height="3"/><line x1="17" y1="14" x2="21" y2="14"/><line x1="21" y1="17" x2="21" y2="21"/><line x1="17" y1="21" x2="21" y2="21"/>
+    </svg>
+    <span id="tab-qr-label">QR-Code</span>
+  </button>
+</div>
+
+<!-- BEWERBUNG MODAL -->
+<div class="modal-overlay" id="bewerbung-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-title">✍️ Bewerbung erstellen</div>
+    <div class="form-group">
+      <label id="m-company-label">Firma / Arbeitgeber</label>
+      <input type="text" id="m-company" placeholder="Muster GmbH">
+    </div>
+    <div class="form-group">
+      <label id="m-job-label">Stelle / Position</label>
+      <input type="text" id="m-job" placeholder="Software Entwickler">
+    </div>
+    <div class="form-group">
+      <label id="m-contact-label">Ansprechperson</label>
+      <input type="text" id="m-contact" placeholder="Mag. Maria Muster">
+    </div>
+    <div class="form-group">
+      <label id="m-addr-label">Adresse der Firma</label>
+      <input type="text" id="m-addr" placeholder="Musterstraße 1, 1010 Wien">
+    </div>
+    <div class="form-group">
+      <label id="m-extra-label">Besondere Hinweise (optional)</label>
+      <textarea id="m-extra" placeholder="z.B. Referenznummer, besondere Qualifikationen..."></textarea>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="generateBewerbung()" id="gen-btn">
+      🤖 <span id="gen-btn-text">Mit KI erstellen</span>
+    </button>
+    <div id="ai-loading" class="ai-loading" style="display:none;">
+      <div class="ai-spinner"></div>
+      <span id="ai-loading-text">KI erstellt dein Bewerbungsschreiben...</span>
+    </div>
+    <div id="bewerbung-result" style="display:none; margin-top:16px;">
+      <label id="result-label">Bewerbungsschreiben</label>
+      <textarea id="bewerbung-text" style="min-height:220px; margin-top:6px;"></textarea>
+      <div class="tts-bar" id="tts-bar">
+        <button onclick="speakText()" title="Vorlesen">🔊</button>
+        <span class="tts-label" id="tts-label">Vorlesen</span>
+        <button onclick="stopSpeech()" title="Stop">⏹️</button>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+        <button class="btn btn-green btn-sm" onclick="createPDF()" id="pdf-btn">📄 PDF</button>
+        <button class="btn btn-primary btn-sm" onclick="sendEmail()" id="send-btn">📧 Senden</button>
+        <button class="btn btn-outline btn-sm" onclick="copyText()" id="copy-btn">📋 Kopieren</button>
+        <button class="btn btn-outline btn-sm" onclick="closeModal()">✖ Schließen</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EMAIL DETAIL MODAL -->
+<div class="modal-overlay" id="email-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div id="email-detail-content"></div>
+    <div style="display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;">
+      <button class="btn btn-primary btn-sm" onclick="bewerbenFromEmail()" id="bewirb-btn">✍️ Bewerben</button>
+      <button class="btn btn-outline btn-sm" onclick="closeEmailModal()">✖ Schließen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ STATE ============
+const BACKEND = 'https://bewerbung-backend-production.up.railway.app';
+
+let state = {
+  dark: false, lang: 'de',
+  apiKey: '', emails: [], docs: [],
+  sentCount: 0, currentEmail: null,
+  emailAddr: '', emailPass: ''
+};
+
+const T = {
+  de: {
+    appTitle: 'Bewerbungs-App',
+    heroTitle: '👋 Willkommen!',
+    heroSub: 'Dein KI-gestützter Bewerbungsassistent. Erstelle professionelle Bewerbungen mit Claude KI.',
+    statEmails: 'E-Mails', statDocs: 'Unterlagen', statSent: 'Gesendet',
+    qc1: 'E-Mails prüfen', qc1s: 'AMS & Stellenangebote anzeigen',
+    qc2: 'Neu bewerben', qc2s: 'KI erstellt dein Schreiben',
+    qc3: 'Unterlagen', qc3s: 'Lebenslauf & Zertifikate',
+    qc4: 'QR-Code', qc4s: 'App mit anderen teilen',
+    hintTitle: '💡 Hinweis',
+    hintText: 'Gib deinen <strong>Claude API-Schlüssel</strong> in den Einstellungen ein, damit die KI Bewerbungsschreiben erstellen kann. Du bekommst ihn kostenlos auf <strong>console.anthropic.com</strong>',
+    emailsTitle: 'E-Mails',
+    chipAll: 'Alle', chipAMS: 'AMS Wien', chipJob: 'Stellenangebote', chipOther: 'Sonstige',
+    addEmailBtn: 'Demo E-Mail hinzufügen',
+    docsTitle: 'Unterlagen',
+    uploadTitle: 'Datei hochladen', uploadSub: 'PDF, DOCX, JPG — tippen zum Auswählen',
+    settingsTitle: 'Einstellungen',
+    sKI: 'KI-Einstellungen', sAPIKey: 'Claude API-Schlüssel', sAPIKeySub: 'Von console.anthropic.com',
+    sEmailTitle: 'E-Mail Konto', sEmailLabel: 'E-Mail Adresse (GMX)',
+    sNameLabel: 'Dein vollständiger Name', sAddrLabel: 'Adresse', sPhoneLabel: 'Telefon',
+    sApp: 'App', sDark: 'Dark Mode', sLang: 'Englisch', sTTS: 'Text-to-Speech',
+    clearBtn: '🗑️ Alle Daten löschen', testBtn: '🧪 API testen',
+    qrTitle: 'QR-Code', shareBtnText: 'App teilen',
+    installTitle: '📲 App installieren',
+    installText: '<strong>iPhone:</strong> Safari öffnen → Teilen-Symbol → "Zum Home-Bildschirm"<br><br><strong>Android:</strong> Chrome → Menü (⋮) → "App installieren"',
+    modalTitle: '✍️ Bewerbung erstellen',
+    mCompany: 'Firma / Arbeitgeber', mJob: 'Stelle / Position',
+    mContact: 'Ansprechperson', mAddr: 'Adresse der Firma',
+    mExtra: 'Besondere Hinweise (optional)',
+    genBtnText: 'Mit KI erstellen',
+    aiLoading: 'KI erstellt dein Bewerbungsschreiben...',
+    resultLabel: 'Bewerbungsschreiben',
+    ttsLabel: 'Vorlesen',
+    tabHome: 'Home', tabEmails: 'E-Mails', tabDocs: 'Unterlagen',
+    tabSettings: 'Einstellungen', tabQR: 'QR-Code',
+    emptyEmailTitle: 'Keine E-Mails', emptyEmailSub: 'Demo E-Mail hinzufügen um loszulegen',
+    bewirbBtn: '✍️ Bewerben',
+    toastCopied: '✅ Kopiert!', toastPDF: '✅ PDF erstellt!', toastSent: '✅ E-Mail gesendet!',
+    toastAPIok: '✅ API-Schlüssel funktioniert!', toastAPIErr: '❌ API-Fehler — Schlüssel prüfen',
+    toastNoKey: '⚠️ Kein API-Schlüssel in Einstellungen!',
+    toastShared: '✅ Link kopiert!', toastCleared: '✅ Alle Daten gelöscht',
+    toastUploaded: '✅ Datei hochgeladen!',
+    pdfBtn: '📄 PDF', sendBtn: '📧 Senden', copyBtn: '📋 Kopieren',
+    bewerbBtn: '✍️ Bewerben',
+    badgeAMS: 'AMS Wien', badgeJob: 'Stellenangebot', badgeOther: 'Sonstige',
+  },
+  en: {
+    appTitle: 'Job Application App',
+    heroTitle: '👋 Welcome!',
+    heroSub: 'Your AI-powered job application assistant. Create professional applications with Claude AI.',
+    statEmails: 'Emails', statDocs: 'Documents', statSent: 'Sent',
+    qc1: 'Check Emails', qc1s: 'View AMS & job offers',
+    qc2: 'New Application', qc2s: 'AI creates your letter',
+    qc3: 'Documents', qc3s: 'CV & Certificates',
+    qc4: 'QR Code', qc4s: 'Share app with others',
+    hintTitle: '💡 Note',
+    hintText: 'Enter your <strong>Claude API key</strong> in settings so the AI can create cover letters. Get it free at <strong>console.anthropic.com</strong>',
+    emailsTitle: 'Emails',
+    chipAll: 'All', chipAMS: 'AMS Vienna', chipJob: 'Job Offers', chipOther: 'Other',
+    addEmailBtn: 'Add Demo Email',
+    docsTitle: 'Documents',
+    uploadTitle: 'Upload File', uploadSub: 'PDF, DOCX, JPG — tap to select',
+    settingsTitle: 'Settings',
+    sKI: 'AI Settings', sAPIKey: 'Claude API Key', sAPIKeySub: 'From console.anthropic.com',
+    sEmailTitle: 'Email Account', sEmailLabel: 'Email Address (GMX)',
+    sNameLabel: 'Your full name', sAddrLabel: 'Address', sPhoneLabel: 'Phone',
+    sApp: 'App', sDark: 'Dark Mode', sLang: 'English', sTTS: 'Text-to-Speech',
+    clearBtn: '🗑️ Delete all data', testBtn: '🧪 Test API',
+    qrTitle: 'QR Code', shareBtnText: 'Share App',
+    installTitle: '📲 Install App',
+    installText: '<strong>iPhone:</strong> Open Safari → Share icon → "Add to Home Screen"<br><br><strong>Android:</strong> Chrome → Menu (⋮) → "Install App"',
+    modalTitle: '✍️ Create Application',
+    mCompany: 'Company / Employer', mJob: 'Position / Role',
+    mContact: 'Contact Person', mAddr: 'Company Address',
+    mExtra: 'Additional Notes (optional)',
+    genBtnText: 'Create with AI',
+    aiLoading: 'AI is creating your cover letter...',
+    resultLabel: 'Cover Letter',
+    ttsLabel: 'Read aloud',
+    tabHome: 'Home', tabEmails: 'Emails', tabDocs: 'Documents',
+    tabSettings: 'Settings', tabQR: 'QR Code',
+    emptyEmailTitle: 'No Emails', emptyEmailSub: 'Add a demo email to get started',
+    bewirbBtn: '✍️ Apply',
+    toastCopied: '✅ Copied!', toastPDF: '✅ PDF created!', toastSent: '✅ Email sent!',
+    toastAPIok: '✅ API key works!', toastAPIErr: '❌ API error — check key',
+    toastNoKey: '⚠️ No API key in settings!',
+    toastShared: '✅ Link copied!', toastCleared: '✅ All data deleted',
+    toastUploaded: '✅ File uploaded!',
+    pdfBtn: '📄 PDF', sendBtn: '📧 Send', copyBtn: '📋 Copy',
+    bewerbBtn: '✍️ Apply',
+    badgeAMS: 'AMS Vienna', badgeJob: 'Job Offer', badgeOther: 'Other',
+  }
+};
+function t(key) { return T[state.lang][key] || key; }
+
+// ============ INIT ============
+function init() {
+  const saved = localStorage.getItem('bew-state');
+  if (saved) {
+    try {
+      const s = JSON.parse(saved);
+      state = { ...state, ...s };
+    } catch(e) {}
+  }
+  if (state.dark) document.body.classList.add('dark');
+  applyLang();
+  loadSettings();
+  renderEmails();
+  renderDocs();
+  generateQR();
+  updateStats();
+}
+
+function save() {
+  localStorage.setItem('bew-state', JSON.stringify(state));
+}
+
+// ============ NAVIGATION ============
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const pageMap = { home: 'home', emails: 'emails', unterlagen: 'unterlagen', einstellungen: 'einstellungen', qrcode: 'qrcode' };
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('tab-' + (name === 'emails' ? 'emails' : name === 'unterlagen' ? 'unterlagen' : name === 'einstellungen' ? 'einstellungen' : name === 'qrcode' ? 'qrcode' : 'home')).classList.add('active');
+  if (name === 'qrcode') generateQR();
+}
+
+// ============ LANGUAGE ============
+function applyLang() {
+  const lang = state.lang;
+  document.getElementById('lang-flag').textContent = lang === 'de' ? '🇩🇪' : '🇬🇧';
+  document.getElementById('lang-toggle').checked = lang === 'en';
+  // Apply all text
+  const el = (id) => document.getElementById(id);
+  const set = (id, key, html = false) => { const e = el(id); if (e) { if (html) e.innerHTML = t(key); else e.textContent = t(key); } };
+  set('nav-title', 'appTitle');
+  set('hero-title', 'heroTitle');
+  set('hero-sub', 'heroSub');
+  set('stat-emails-label', 'statEmails');
+  set('stat-docs-label', 'statDocs');
+  set('stat-sent-label', 'statSent');
+  set('qc1-title', 'qc1'); set('qc1-sub', 'qc1s');
+  set('qc2-title', 'qc2'); set('qc2-sub', 'qc2s');
+  set('qc3-title', 'qc3'); set('qc3-sub', 'qc3s');
+  set('qc4-title', 'qc4'); set('qc4-sub', 'qc4s');
+  set('hint-title', 'hintTitle'); el('hint-text') && (el('hint-text').innerHTML = t('hintText'));
+  set('emails-title', 'emailsTitle');
+  set('chip-all', 'chipAll'); set('chip-ams', 'chipAMS'); set('chip-job', 'chipJob'); set('chip-other', 'chipOther');
+  set('add-email-btn', 'addEmailBtn');
+  set('docs-title', 'docsTitle');
+  set('upload-title', 'uploadTitle'); set('upload-sub', 'uploadSub');
+  set('settings-title', 'settingsTitle');
+  set('s-ki', 'sKI'); set('s-apikey-label', 'sAPIKey'); set('s-apikey-sub', 'sAPIKeySub');
+  set('s-email-title', 'sEmailTitle'); set('s-email-label', 'sEmailLabel');
+  set('s-name-label', 'sNameLabel'); set('s-addr-label', 'sAddrLabel'); set('s-phone-label', 'sPhoneLabel');
+  set('s-app', 'sApp'); set('s-dark-label', 'sDark'); set('s-lang-label', 'sLang'); set('s-tts-label', 'sTTS');
+  set('clear-btn', 'clearBtn'); set('test-btn', 'testBtn');
+  set('qr-title', 'qrTitle'); set('share-btn-text', 'shareBtnText');
+  set('install-title', 'installTitle'); el('install-text') && (el('install-text').innerHTML = t('installText'));
+  set('modal-title', 'modalTitle');
+  set('m-company-label', 'mCompany'); set('m-job-label', 'mJob');
+  set('m-contact-label', 'mContact'); set('m-addr-label', 'mAddr');
+  set('m-extra-label', 'mExtra');
+  set('gen-btn-text', 'genBtnText');
+  set('ai-loading-text', 'aiLoading');
+  set('result-label', 'resultLabel');
+  set('tts-label', 'ttsLabel');
+  set('tab-home-label', 'tabHome'); set('tab-emails-label', 'tabEmails');
+  set('tab-docs-label', 'tabDocs'); set('tab-settings-label', 'tabSettings'); set('tab-qr-label', 'tabQR');
+  set('pdf-btn', 'pdfBtn'); set('send-btn', 'sendBtn'); set('copy-btn', 'copyBtn');
+  set('bewirb-btn', 'bewirbBtn');
+  renderEmails();
+}
+function toggleLang() {
+  state.lang = state.lang === 'de' ? 'en' : 'de';
+  save(); applyLang();
+}
+function toggleLangFromSettings(cb) {
+  state.lang = cb.checked ? 'en' : 'de';
+  save(); applyLang();
+}
+
+// ============ DARK MODE ============
+function toggleDark() {
+  state.dark = !state.dark;
+  document.body.classList.toggle('dark', state.dark);
+  document.getElementById('dark-icon').textContent = state.dark ? '☀️' : '🌙';
+  document.getElementById('dark-toggle').checked = state.dark;
+  save();
+}
+function toggleDarkFromSettings(cb) {
+  state.dark = cb.checked;
+  document.body.classList.toggle('dark', state.dark);
+  document.getElementById('dark-icon').textContent = state.dark ? '☀️' : '🌙';
+  save();
+}
+
+// ============ SETTINGS ============
+function loadSettings() {
+  if (state.apiKey) document.getElementById('api-key-input').value = state.apiKey;
+  if (state.emailAddr) document.getElementById('email-addr').value = state.emailAddr;
+  if (state.emailPass) document.getElementById('email-pass').value = state.emailPass;
+  if (state.userName) document.getElementById('user-name').value = state.userName;
+  if (state.userAddr) document.getElementById('user-addr').value = state.userAddr;
+  if (state.userPhone) document.getElementById('user-phone').value = state.userPhone;
+  document.getElementById('dark-toggle').checked = state.dark;
+  document.getElementById('lang-toggle').checked = state.lang === 'en';
+  document.getElementById('dark-icon').textContent = state.dark ? '☀️' : '🌙';
+}
+function saveApiKey() {
+  state.apiKey = document.getElementById('api-key-input').value.trim();
+  save();
+}
+function saveSettings() {
+  state.emailAddr = document.getElementById('email-addr').value;
+  state.emailPass = document.getElementById('email-pass').value;
+  state.userName = document.getElementById('user-name').value;
+  state.userAddr = document.getElementById('user-addr').value;
+  state.userPhone = document.getElementById('user-phone').value;
+  save();
+}
+async function testApiKey() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (!key) { showToast(t('toastNoKey')); return; }
+  showToast('⏳ Teste API...');
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 10, messages: [{ role: 'user', content: 'Hi' }] })
+    });
+    if (r.ok) showToast(t('toastAPIok'));
+    else showToast(t('toastAPIErr'));
+  } catch(e) { showToast(t('toastAPIErr')); }
+}
+function clearAll() {
+  if (!confirm(state.lang === 'de' ? 'Alle Daten wirklich löschen?' : 'Really delete all data?')) return;
+  state = { dark: state.dark, lang: state.lang, apiKey: '', emails: [], docs: [], sentCount: 0 };
+  save();
+  renderEmails(); renderDocs(); updateStats(); loadSettings();
+  showToast(t('toastCleared'));
+}
+
+// ============ EMAILS ============
+async function fetchEmailsFromServer() {
+  const email = state.emailAddr;
+  const password = state.emailPass;
+  if (!email || !password) {
+    showToast('⚠️ E-Mail und Passwort in Einstellungen eingeben!');
+    showPage('einstellungen');
+    return;
+  }
+  const btn = document.getElementById('fetch-btn');
+  if (btn) btn.disabled = true;
+  showToast('📥 Lade E-Mails...');
+  try {
+    const r = await fetch(BACKEND + '/emails', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await r.json();
+    if (data.emails) {
+      data.emails.forEach(e => {
+        if (!state.emails.find(x => x.subject === e.subject && x.from === e.from)) {
+          state.emails.unshift(e);
+        }
+      });
+      save(); renderEmails(); updateStats();
+      showToast('✅ ' + data.emails.length + ' E-Mails geladen!');
+    } else {
+      showToast('❌ Fehler: ' + (data.error || 'Unbekannt'));
+    }
+  } catch(e) {
+    showToast('❌ Verbindungsfehler: ' + e.message);
+  }
+  if (btn) btn.disabled = false;
+}
+
+// ============ EMAILS ============
+const DEMO_EMAILS_DE = [
+  { id: 1, type: 'ams', sender: 'AMS Wien', email: 'ams@ams.at', subject: 'Neue Stellenvermittlung — IT-Techniker', date: '17.06.2026', body: 'Sehr geehrte/r Bewerber/in,\n\nwir haben eine passende Stelle für Sie gefunden:\n\nFirma: TechSolutions GmbH\nStelle: IT-Techniker/in\nAdresse: Mariahilfer Straße 45, 1060 Wien\nAnsprechperson: Mag. Sandra Huber\nReferenz: AMS-2026-4512\n\nBitte bewerben Sie sich bis 30.06.2026.\n\nMit freundlichen Grüßen\nIhr AMS Wien Team', company: 'TechSolutions GmbH', job: 'IT-Techniker/in', contact: 'Mag. Sandra Huber', addr: 'Mariahilfer Straße 45, 1060 Wien' },
+  { id: 2, type: 'job', sender: 'Karriere.at', email: 'jobs@karriere.at', subject: 'Ihr Inserat: Lagerarbeiter/in gesucht', date: '16.06.2026', body: 'Guten Tag,\n\nWir suchen ab sofort:\n\nFirma: LogiWien GmbH\nStelle: Lagerarbeiter/in (Vollzeit)\nAdresse: Laxenburger Straße 200, 1100 Wien\nAnsprechperson: Herr Karl Bauer\nGehalt: ab €1.800 brutto\n\nBewerbung bitte an: jobs@logiwien.at', company: 'LogiWien GmbH', job: 'Lagerarbeiter/in', contact: 'Herr Karl Bauer', addr: 'Laxenburger Straße 200, 1100 Wien' },
+  { id: 3, type: 'other', sender: 'info@firma.at', email: 'info@firma.at', subject: 'Ihre Anfrage', date: '15.06.2026', body: 'Danke für Ihre Nachricht. Wir werden uns melden.', company: '', job: '', contact: '', addr: '' }
+];
+const DEMO_EMAILS_EN = [
+  { id: 1, type: 'ams', sender: 'AMS Vienna', email: 'ams@ams.at', subject: 'New Job Match — IT Technician', date: '17.06.2026', body: 'Dear Applicant,\n\nWe found a suitable position for you:\n\nCompany: TechSolutions GmbH\nPosition: IT Technician\nAddress: Mariahilfer Straße 45, 1060 Vienna\nContact: Mag. Sandra Huber\nRef: AMS-2026-4512\n\nPlease apply by 30.06.2026.\n\nBest regards,\nAMS Vienna Team', company: 'TechSolutions GmbH', job: 'IT Technician', contact: 'Mag. Sandra Huber', addr: 'Mariahilfer Straße 45, 1060 Vienna' },
+  { id: 2, type: 'job', sender: 'Karriere.at', email: 'jobs@karriere.at', subject: 'Job listing: Warehouse Worker', date: '16.06.2026', body: 'Hello,\n\nWe are looking for:\n\nCompany: LogiWien GmbH\nPosition: Warehouse Worker (Full-time)\nAddress: Laxenburger Straße 200, 1100 Vienna\nContact: Mr. Karl Bauer\nSalary: from €1,800 gross\n\nApply to: jobs@logiwien.at', company: 'LogiWien GmbH', job: 'Warehouse Worker', contact: 'Mr. Karl Bauer', addr: 'Laxenburger Straße 200, 1100 Vienna' },
+  { id: 3, type: 'other', sender: 'info@firma.at', email: 'info@firma.at', subject: 'Your inquiry', date: '15.06.2026', body: 'Thank you for your message. We will get back to you.', company: '', job: '', contact: '', addr: '' }
+];
+
+let emailFilter = 'all';
+function filterEmails(f, el) {
+  emailFilter = f;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderEmails();
+}
+function renderEmails() {
+  const list = document.getElementById('email-list');
+  if (!list) return;
+  const emails = state.emails.length ? state.emails : [];
+  const filtered = emailFilter === 'all' ? emails : emails.filter(e => e.type === emailFilter);
+  if (!filtered.length) {
+    list.innerHTML = `<div class="empty-state"><div class="icon">📭</div><h3>${t('emptyEmailTitle')}</h3><p>${t('emptyEmailSub')}</p></div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(e => `
+    <div class="email-item" onclick="openEmail(${e.id})">
+      <div class="email-header">
+        <div class="email-sender">${e.sender}</div>
+        <div class="email-date">${e.date}</div>
+      </div>
+      <div class="email-subject">${e.subject}</div>
+      <span class="email-badge badge-${e.type}">${e.type === 'ams' ? t('badgeAMS') : e.type === 'job' ? t('badgeJob') : t('badgeOther')}</span>
+    </div>
+  `).join('');
+}
+function addDemoEmail() {
+  const demos = state.lang === 'de' ? DEMO_EMAILS_DE : DEMO_EMAILS_EN;
+  const nextId = Math.max(0, ...state.emails.map(e => e.id)) + 1;
+  const demo = { ...demos[state.emails.length % demos.length], id: nextId };
+  state.emails.unshift(demo);
+  save(); renderEmails(); updateStats();
+  showToast('📧 ' + demo.subject);
+}
+function openEmail(id) {
+  const email = state.emails.find(e => e.id === id);
+  if (!email) return;
+  state.currentEmail = email;
+  const d = document.getElementById('email-detail-content');
+  d.innerHTML = `
+    <div style="margin-bottom:12px;">
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:2px;">${email.date}</div>
+      <div style="font-size:18px;font-weight:800;margin-bottom:4px;">${email.subject}</div>
+      <div style="font-size:13px;color:var(--text-muted);">${email.sender} &lt;${email.email}&gt;</div>
+      <span class="email-badge badge-${email.type}" style="margin-top:6px;display:inline-block;">${email.type === 'ams' ? t('badgeAMS') : email.type === 'job' ? t('badgeJob') : t('badgeOther')}</span>
+    </div>
+    <div style="background:var(--input-bg);border-radius:var(--radius-sm);padding:14px;font-size:14px;line-height:1.7;white-space:pre-wrap;border:1px solid var(--border);">${email.body}</div>
+  `;
+  const btn = document.getElementById('bewirb-btn');
+  btn.style.display = (email.company || email.job) ? 'inline-flex' : 'none';
+  document.getElementById('email-modal').classList.add('open');
+}
+function closeEmailModal() {
+  document.getElementById('email-modal').classList.remove('open');
+}
+function bewerbenFromEmail() {
+  const e = state.currentEmail;
+  if (!e) return;
+  closeEmailModal();
+  document.getElementById('m-company').value = e.company || '';
+  document.getElementById('m-job').value = e.job || '';
+  document.getElementById('m-contact').value = e.contact || '';
+  document.getElementById('m-addr').value = e.addr || '';
+  document.getElementById('m-extra').value = '';
+  document.getElementById('bewerbung-result').style.display = 'none';
+  document.getElementById('ai-loading').style.display = 'none';
+  document.getElementById('bewerbung-modal').classList.add('open');
+}
+
+// ============ UNTERLAGEN ============
+function renderDocs() {
+  const grid = document.getElementById('docs-grid');
+  if (!grid) return;
+  if (!state.docs.length) {
+    grid.innerHTML = '';
+    return;
+  }
+  grid.innerHTML = state.docs.map((d, i) => `
+    <div class="doc-card">
+      <div class="doc-badge">${state.lang === 'de' ? 'Hochgeladen' : 'Uploaded'}</div>
+      <div class="doc-icon">${d.icon}</div>
+      <div class="doc-name">${d.name}</div>
+      <div class="doc-size">${d.size}</div>
+      <div class="doc-actions">
+        <button class="btn btn-outline btn-sm" onclick="viewDoc(${i})">👁️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteDoc(${i})">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+  updateStats();
+}
+function handleFileUpload(input) {
+  const files = Array.from(input.files);
+  files.forEach(file => {
+    const ext = file.name.split('.').pop().toLowerCase();
+    const icons = { pdf: '📄', doc: '📝', docx: '📝', jpg: '🖼️', jpeg: '🖼️', png: '🖼️' };
+    const icon = icons[ext] || '📎';
+    const size = file.size > 1024*1024 ? (file.size/1024/1024).toFixed(1)+' MB' : (file.size/1024).toFixed(0)+' KB';
+    // Store as base64 for PDF use
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      state.docs.push({ name: file.name, icon, size, data: ev.target.result, type: file.type });
+      save(); renderDocs(); showToast(t('toastUploaded'));
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+function viewDoc(i) {
+  const d = state.docs[i];
+  if (!d || !d.data) return;
+  const w = window.open();
+  if (d.type && d.type.startsWith('image')) {
+    w.document.write(`<html><body style="margin:0;background:#000;display:flex;justify-content:center;align-items:center;min-height:100vh;"><img src="${d.data}" style="max-width:100%;max-height:100vh;"></body></html>`);
+  } else {
+    w.document.write(`<html><body style="margin:0;"><iframe src="${d.data}" style="width:100%;height:100vh;border:none;"></iframe></body></html>`);
+  }
+}
+function deleteDoc(i) {
+  state.docs.splice(i, 1);
+  save(); renderDocs();
+}
+
+// ============ BEWERBUNG MODAL ============
+function openBewerbung() {
+  document.getElementById('m-company').value = '';
+  document.getElementById('m-job').value = '';
+  document.getElementById('m-contact').value = '';
+  document.getElementById('m-addr').value = '';
+  document.getElementById('m-extra').value = '';
+  document.getElementById('bewerbung-result').style.display = 'none';
+  document.getElementById('ai-loading').style.display = 'none';
+  document.getElementById('bewerbung-modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('bewerbung-modal').classList.remove('open');
+  stopSpeech();
+}
+
+async function generateBewerbung() {
+  const key = state.apiKey;
+  if (!key) { showToast(t('toastNoKey')); showPage('einstellungen'); return; }
+  const company = document.getElementById('m-company').value.trim();
+  const job = document.getElementById('m-job').value.trim();
+  const contact = document.getElementById('m-contact').value.trim();
+  const addr = document.getElementById('m-addr').value.trim();
+  const extra = document.getElementById('m-extra').value.trim();
+  const name = state.userName || 'Max Mustermann';
+  const myAddr = state.userAddr || '1010 Wien';
+  const phone = state.userPhone || '';
+  const myEmail = state.emailAddr || '';
+  const isDE = state.lang === 'de';
+  const today = new Date().toLocaleDateString('de-AT');
+
+  document.getElementById('ai-loading').style.display = 'flex';
+  document.getElementById('bewerbung-result').style.display = 'none';
+  document.getElementById('gen-btn').disabled = true;
+
+  const systemPrompt = isDE
+    ? `Du bist ein professioneller Bewerbungsassistent auf Deutsch. Erstelle ein formelles, professionelles Bewerbungsschreiben auf Deutsch im österreichischen Stil. Halte es präzise (ca. 250-350 Wörter). Gib NUR den reinen Brieftext aus, keine Erklärungen.`
+    : `You are a professional job application assistant. Create a formal, professional cover letter in English. Keep it concise (about 250-350 words). Output ONLY the letter text, no explanations.`;
+
+  const userPrompt = isDE
+    ? `Erstelle ein Bewerbungsschreiben mit diesen Daten:
+Bewerber: ${name}
+Adresse: ${myAddr}
+${phone ? 'Telefon: ' + phone : ''}
+${myEmail ? 'E-Mail: ' + myEmail : ''}
+Datum: ${today}
+
+Firma: ${company || 'Unbekannte Firma'}
+Stelle: ${job || 'die ausgeschriebene Stelle'}
+Ansprechperson: ${contact || 'Sehr geehrte Damen und Herren'}
+Firmenadresse: ${addr || 'Wien'}
+${extra ? 'Hinweise: ' + extra : ''}`
+    : `Create a cover letter with these details:
+Applicant: ${name}
+Address: ${myAddr}
+${phone ? 'Phone: ' + phone : ''}
+${myEmail ? 'Email: ' + myEmail : ''}
+Date: ${today}
+
+Company: ${company || 'Company'}
+Position: ${job || 'the advertised position'}
+Contact: ${contact || 'Dear Sir or Madam'}
+Company Address: ${addr || 'Vienna'}
+${extra ? 'Notes: ' + extra : ''}`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    });
+    const data = await resp.json();
+    if (data.content && data.content[0]) {
+      const text = data.content[0].text;
+      document.getElementById('bewerbung-text').value = text;
+      document.getElementById('bewerbung-result').style.display = 'block';
+      // Store last generated data for PDF
+      state._lastBewerbung = { company, job, contact, addr, text };
+    } else {
+      showToast(t('toastAPIErr'));
+    }
+  } catch(e) {
+    showToast(t('toastAPIErr') + ': ' + e.message);
+  }
+  document.getElementById('ai-loading').style.display = 'none';
+  document.getElementById('gen-btn').disabled = false;
+}
+
+// ============ TTS ============
+let ttsUtterance = null;
+function speakText() {
+  const text = document.getElementById('bewerbung-text').value;
+  if (!text) return;
+  stopSpeech();
+  ttsUtterance = new SpeechSynthesisUtterance(text);
+  ttsUtterance.lang = state.lang === 'de' ? 'de-DE' : 'en-US';
+  ttsUtterance.rate = 0.9;
+  window.speechSynthesis.speak(ttsUtterance);
+}
+function stopSpeech() {
+  window.speechSynthesis.cancel();
+}
+
+// ============ PDF ============
+function createPDF() {
+  const text = document.getElementById('bewerbung-text').value;
+  if (!text) return;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(11);
+  const lines = doc.splitTextToSize(text, 170);
+  let y = 25;
+  lines.forEach(line => {
+    if (y > 275) { doc.addPage(); y = 25; }
+    doc.text(line, 20, y);
+    y += 6;
+  });
+  const filename = 'Bewerbung_' + (state._lastBewerbung?.company || 'Firma').replace(/\s/g,'_') + '.pdf';
+  doc.save(filename);
+  showToast(t('toastPDF'));
+  state.sentCount++;
+  save(); updateStats();
+}
+
+// ============ SEND EMAIL ============
+async function sendEmail() {
+  const text = document.getElementById('bewerbung-text').value;
+  if (!text) return;
+  const company = document.getElementById('m-company').value;
+  const job = document.getElementById('m-job').value;
+  const subject = state.lang === 'de' ? `Bewerbung als ${job} bei ${company}` : `Application for ${job} at ${company}`;
+  
+  if (state.emailAddr && state.emailPass) {
+    showToast('📤 Sende E-Mail...');
+    try {
+      const r = await fetch(BACKEND + '/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: state.emailAddr,
+          password: state.emailPass,
+          to: state.currentEmail ? state.currentEmail.email : state.emailAddr,
+          subject: subject,
+          text: text
+        })
+      });
+      const data = await r.json();
+      if (data.success) {
+        showToast(t('toastSent'));
+      } else {
+        showToast('❌ Fehler: ' + (data.error || 'Unbekannt'));
+        return;
+      }
+    } catch(e) {
+      showToast('❌ Fehler: ' + e.message);
+      return;
+    }
+  } else {
+    const mailto = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+    window.location.href = mailto;
+    showToast(t('toastSent'));
+  }
+  state.sentCount++;
+  save(); updateStats();
+}
+
+function copyText() {
+  const text = document.getElementById('bewerbung-text').value;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => showToast(t('toastCopied'))).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    showToast(t('toastCopied'));
+  });
+}
+
+// ============ QR CODE ============
+function generateQR() {
+  const div = document.getElementById('qr-code');
+  if (!div) return;
+  div.innerHTML = '';
+  const url = window.location.href.split('?')[0];
+  document.getElementById('qr-url-display').textContent = url;
+  try {
+    new QRCode(div, {
+      text: url,
+      width: 180, height: 180,
+      colorDark: '#185FA5', colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch(e) {
+    div.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:20px;">QR-Code konnte nicht geladen werden</p>';
+  }
+}
+function shareApp() {
+  const url = window.location.href.split('?')[0];
+  if (navigator.share) {
+    navigator.share({ title: t('appTitle'), url }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(url).then(() => showToast(t('toastShared'))).catch(() => showToast(t('toastShared')));
+  }
+}
+
+// ============ STATS ============
+function updateStats() {
+  document.getElementById('stat-emails').textContent = state.emails.length;
+  document.getElementById('stat-docs').textContent = state.docs.length;
+  document.getElementById('stat-sent').textContent = state.sentCount || 0;
+}
+
+// ============ TOAST ============
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ============ CLOSE MODALS ON BACKDROP ============
+document.getElementById('bewerbung-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+document.getElementById('email-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeEmailModal();
+});
+
+// ============ DRAG & DROP ============
+const zone = document.getElementById('upload-zone');
+if (zone) {
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('drag');
+    const fake = { files: e.dataTransfer.files };
+    handleFileUpload(fake);
+  });
+}
+
+// ============ START ============
+init();
+</script>
+</body>
+</html>
