@@ -1,4 +1,4 @@
-Jetzt kopiere diesen Text und füge ihn in das große Textfeld ein:
+Hier ist der komplette Code — alles markieren und kopieren:
 
 ```javascript
 const express = require('express');
@@ -11,16 +11,14 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// Test ob Server läuft
 app.get('/', (req, res) => {
-  res.json({ status: 'Bewerbungs-Backend läuft!' });
+  res.json({ status: 'Bewerbungs-Backend laeuft!' });
 });
 
-// E-Mails lesen
 app.post('/emails', (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.status(400).json({ error: 'E-Mail und Passwort fehlen' });
+    return res.status(400).json({ error: 'Email und Passwort fehlen' });
   }
 
   const imap = new Imap({
@@ -51,35 +49,35 @@ app.post('/emails', (req, res) => {
           msg.on('body', (stream) => {
             simpleParser(stream, (err, parsed) => {
               if (!err) {
-                const from = parsed.from?.text || '';
+                const from = parsed.from ? parsed.from.text : '';
                 const subject = parsed.subject || '';
                 const text = parsed.text || '';
 
-                // Typ erkennen
                 let type = 'other';
                 const lower = (from + subject + text).toLowerCase();
-                if (lower.includes('ams') || lower.includes('arbeitsmarkt')) type = 'ams';
-                else if (lower.includes('stelle') || lower.includes('job') || lower.includes('bewerbung') || lower.includes('karriere') || lower.includes('position')) type = 'job';
+                if (lower.includes('ams') || lower.includes('arbeitsmarkt')) {
+                  type = 'ams';
+                } else if (lower.includes('stelle') || lower.includes('job') || lower.includes('bewerbung') || lower.includes('karriere')) {
+                  type = 'job';
+                }
 
-                // Firmenname aus Betreff extrahieren
                 let company = '';
-                const companyMatch = subject.match(/bei\s+([^,\-]+)/i) || subject.match(/–\s*([^,\-]+)/i);
+                const companyMatch = subject.match(/bei\s+([^,\-]+)/i);
                 if (companyMatch) company = companyMatch[1].trim();
 
-                // Stelle extrahieren
                 let job = '';
-                const jobMatch = subject.match(/als\s+([^,\-bei]+)/i) || subject.match(/Stelle[:\s]+([^,\-]+)/i);
+                const jobMatch = subject.match(/als\s+([^,\-bei]+)/i);
                 if (jobMatch) job = jobMatch[1].trim();
 
                 emails.push({
                   id: Date.now() + Math.random(),
-                  from,
-                  subject,
-                  date: parsed.date?.toLocaleDateString('de-AT') || '',
+                  from: from,
+                  subject: subject,
+                  date: parsed.date ? parsed.date.toLocaleDateString('de-AT') : '',
                   body: text.substring(0, 1000),
-                  type,
-                  company,
-                  job
+                  type: type,
+                  company: company,
+                  job: job
                 });
               }
             });
@@ -89,7 +87,7 @@ app.post('/emails', (req, res) => {
         fetch.once('end', () => {
           setTimeout(() => {
             imap.end();
-            res.json({ emails });
+            res.json({ emails: emails });
           }, 2000);
         });
       });
@@ -103,9 +101,8 @@ app.post('/emails', (req, res) => {
   imap.connect();
 });
 
-// E-Mail senden
 app.post('/send', (req, res) => {
-  const { email, password, to, subject, text, html } = req.body;
+  const { email, password, to, subject, text } = req.body;
 
   const transporter = nodemailer.createTransport({
     host: 'mail.gmx.net',
@@ -117,10 +114,9 @@ app.post('/send', (req, res) => {
 
   transporter.sendMail({
     from: email,
-    to,
-    subject,
-    text,
-    html: html || text
+    to: to,
+    subject: subject,
+    text: text
   }, (err, info) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ success: true, messageId: info.messageId });
@@ -129,8 +125,8 @@ app.post('/send', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log('Server läuft auf Port ' + PORT);
+  console.log('Server laeuft auf Port ' + PORT);
 });
 ```
 
-Wenn eingefügt → klick auf **"Commit changes"** unten! 😊
+Einfügen → dann **"Commit changes"** klicken! 😊
