@@ -1365,7 +1365,7 @@ async function sendEmail() {
   try {
     // Wake up backend first
     try { await fetch(BACKEND + '/'); } catch(e) {}
-    await new Promise(r => setTimeout(r, 2000));
+    await new Promise(r => setTimeout(r, 8000));
     showToast('📤 Sende E-Mail...');
     const attachments = [];
     state.docFiles = state.docFiles || {};
