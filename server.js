@@ -5,7 +5,12 @@ const { simpleParser } = require('mailparser');
 const nodemailer = require('nodemailer');
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.options('*', cors());
 app.use(express.json({ limit: '25mb' }));
 
 app.get('/', (req, res) => {
