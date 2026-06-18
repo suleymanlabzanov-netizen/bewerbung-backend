@@ -1360,9 +1360,13 @@ async function sendEmail() {
 
   const sendBtn = document.getElementById('send-btn');
   if (sendBtn) sendBtn.disabled = true;
-  showToast('📤 Sende E-Mail...');
+  showToast('⏳ Server wird gestartet...');
 
   try {
+    // Wake up backend first
+    try { await fetch(BACKEND + '/'); } catch(e) {}
+    await new Promise(r => setTimeout(r, 2000));
+    showToast('📤 Sende E-Mail...');
     const attachments = [];
     state.docFiles = state.docFiles || {};
 
