@@ -1340,7 +1340,7 @@ function createPDF() {
 }
 
 // ============ SEND EMAIL ============
-function sendEmail() {
+async function sendEmail() {
   const text = document.getElementById('bewerbung-text').value;
   if (!text) return;
   const job = document.getElementById('m-job').value;
@@ -1353,11 +1353,64 @@ function sendEmail() {
     return;
   }
 
-  const mailto = `mailto:${recipientEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
-  window.location.href = mailto;
-  showToast(t('toastSent'));
-  state.sentCount++;
-  save(); updateStats();
+  if (!state.emailAddr || !state.emailPass) {
+    showToast('⚠️ GMX E-Mail und Passwort in Einstellungen eingeben!');
+    return;
+  }
+
+  const sendBtn = document.getElementById('send-btn');
+  if (sendBtn) sendBtn.disabled = true;
+  showToast('📤 Sende E-Mail...');
+
+  try {
+    const attachments = [];
+    state.docFiles = state.docFiles || {};
+
+    if (state.docFiles.ll) {
+      attachments.push({
+        filename: state.docFiles.ll.name,
+        content: state.docFiles.ll.data.split(',')[1]
+      });
+    }
+    if (state.docFiles.zert) {
+      attachments.push({
+        filename: state.docFiles.zert.name,
+        content: state.docFiles.zert.data.split(',')[1]
+      });
+    }
+    if (state.docFiles.bew) {
+      attachments.push({
+        filename: state.docFiles.bew.name,
+        content: state.docFiles.bew.data.split(',')[1]
+      });
+    }
+
+    const r = await fetch(BACKEND + '/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: state.emailAddr,
+        password: state.emailPass,
+        to: recipientEmail,
+        subject: subject,
+        text: text,
+        attachments: attachments
+      })
+    });
+
+    const data = await r.json();
+    if (data.success) {
+      showToast('✅ E-Mail erfolgreich gesendet!');
+      state.sentCount++;
+      save(); updateStats();
+    } else {
+      showToast('❌ Fehler: ' + (data.error || 'Unbekannt'));
+    }
+  } catch(e) {
+    showToast('❌ Verbindungsfehler: ' + e.message);
+  }
+
+  if (sendBtn) sendBtn.disabled = false;
 }
 
 async function handleStellenanzeige(input) {
