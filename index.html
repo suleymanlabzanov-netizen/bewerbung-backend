@@ -1340,64 +1340,24 @@ function createPDF() {
 }
 
 // ============ SEND EMAIL ============
-async function sendEmail() {
+function sendEmail() {
   const text = document.getElementById('bewerbung-text').value;
   if (!text) return;
-  const company = document.getElementById('m-company').value;
   const job = document.getElementById('m-job').value;
   const toEmail = document.getElementById('m-to-email') ? document.getElementById('m-to-email').value : '';
-  const subject = `Bewerbung als ${job}`;
   const recipientEmail = toEmail || (state.currentEmail ? state.currentEmail.email : '');
+  const subject = `Bewerbung als ${job}`;
 
   if (!recipientEmail) {
     showToast('⚠️ Bitte E-Mail Adresse des Empfängers eingeben!');
     return;
   }
 
-  if (state.emailAddr && state.emailPass) {
-    showToast('📤 Sende E-Mail...');
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 30000);
-      const r = await fetch(BACKEND + '/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
-        body: JSON.stringify({
-          email: state.emailAddr,
-          password: state.emailPass,
-          to: recipientEmail,
-          subject: subject,
-          text: text
-        })
-      });
-      clearTimeout(timeout);
-      const data = await r.json();
-      if (data.success) {
-        showToast(t('toastSent'));
-        state.sentCount++;
-        save(); updateStats();
-      } else {
-        showToast('❌ Fehler: ' + (data.error || 'Unbekannt'));
-      }
-    } catch(e) {
-      if (e.name === 'AbortError') {
-        showToast('❌ Timeout — bitte nochmal versuchen');
-      } else {
-        const mailto = `mailto:${recipientEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
-        window.open(mailto);
-        showToast(t('toastSent'));
-        state.sentCount++;
-        save(); updateStats();
-      }
-    }
-  } else {
-    const mailto = `mailto:${recipientEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
-    window.open(mailto);
-    showToast(t('toastSent'));
-    state.sentCount++;
-    save(); updateStats();
-  }
+  const mailto = `mailto:${recipientEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+  window.location.href = mailto;
+  showToast(t('toastSent'));
+  state.sentCount++;
+  save(); updateStats();
 }
 
 async function handleStellenanzeige(input) {
