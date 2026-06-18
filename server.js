@@ -6,7 +6,7 @@ const nodemailer = require('nodemailer');
 
 const app = express();
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '25mb' }));
 
 app.get('/', (req, res) => {
   res.json({ status: 'OK' });
@@ -34,20 +34,22 @@ app.post('/emails', (req, res) => {
           imap.end();
           return res.json({ emails: [] });
         }
-        const recent = results.slice(-20).reverse();
+        const recent = results.slice(-30).reverse();
         const fetch = imap.fetch(recent, { bodies: '' });
         fetch.on('message', (msg) => {
           msg.on('body', (stream) => {
             simpleParser(stream, (err, parsed) => {
               if (!err) {
                 const from = parsed.from ? parsed.from.text : '';
+                const fromEmail = parsed.from && parsed.from.value && parsed.from.value[0] ? parsed.from.value[0].address : '';
                 const subject = parsed.subject || '';
                 const text = parsed.text || '';
+                const date = parsed.date ? parsed.date.toLocaleDateString('de-AT') : '';
                 let type = 'other';
                 const lower = (from + subject + text).toLowerCase();
                 if (lower.includes('ams') || lower.includes('arbeitsmarkt')) {
                   type = 'ams';
-                } else if (lower.includes('stelle') || lower.includes('job') || lower.includes('bewerbung')) {
+                } else if (lower.includes('stelle') || lower.includes('job') || lower.includes('bewerbung') || lower.includes('karriere') || lower.includes('position')) {
                   type = 'job';
                 }
                 let company = '';
@@ -59,9 +61,10 @@ app.post('/emails', (req, res) => {
                 emails.push({
                   id: Date.now() + Math.random(),
                   from: from,
+                  email: fromEmail,
                   subject: subject,
-                  date: parsed.date ? parsed.date.toLocaleDateString('de-AT') : '',
-                  body: text.substring(0, 1000),
+                  date: date,
+                  body: text.substring(0, 1500),
                   type: type,
                   company: company,
                   job: job
@@ -86,20 +89,39 @@ app.post('/emails', (req, res) => {
 });
 
 app.post('/send', (req, res) => {
-  const { email, password, to, subject, text } = req.body;
+  const { email, password, to, subject, text, attachments } = req.body;
+
+  if (!email || !password || !to) {
+    return res.status(400).json({ error: 'Fehlende Daten' });
+  }
+
   const transporter = nodemailer.createTransport({
     host: 'mail.gmx.net',
     port: 587,
     secure: false,
     auth: { user: email, pass: password },
-    tls: { rejectUnauthorized: false }
+    tls: { rejectUnauthorized: false },
+    connectionTimeout: 15000,
+    greetingTimeout: 10000,
+    socketTimeout: 20000
   });
-  transporter.sendMail({
+
+  const mailOptions = {
     from: email,
     to: to,
     subject: subject,
     text: text
-  }, (err, info) => {
+  };
+
+  if (attachments && attachments.length > 0) {
+    mailOptions.attachments = attachments.map(a => ({
+      filename: a.filename,
+      content: a.content,
+      encoding: 'base64'
+    }));
+  }
+
+  transporter.sendMail(mailOptions, (err, info) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ success: true, messageId: info.messageId });
   });
