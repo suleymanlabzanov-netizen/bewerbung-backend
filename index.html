@@ -348,7 +348,7 @@
       <span id="dark-icon">🌙</span>
     </button>
     <button class="icon-btn" onclick="toggleLang()" title="Sprache">
-      <span id="lang-flag">🇩🇪</span>
+      <span id="lang-flag" style="font-size:13px;font-weight:700;">DE</span>
     </button>
   </div>
 </nav>
@@ -388,7 +388,7 @@
       <div class="quick-card" onclick="openBewerbung()">
         <div class="icon">✍️</div>
         <h3 id="qc2-title">Neu bewerben</h3>
-        <p id="qc2-sub">KI erstellt dein Schreiben</p>
+        <p id="qc2-sub">Bewerbung erstellen</p>
       </div>
       <div class="quick-card" onclick="showPage('unterlagen')">
         <div class="icon">📁</div>
@@ -542,7 +542,7 @@
   <div class="page-inner">
     <div class="section-heading">⚙️ <span id="settings-title">Einstellungen</span></div>
     <div class="settings-group">
-      <div class="card-title" id="s-ki">KI-Einstellungen</div>
+      <div class="card-title" id="s-ki">API-Einstellungen</div>
       <div class="settings-row">
         <div>
           <div class="settings-label" id="s-apikey-label">Claude API-Schlüssel</div>
@@ -689,6 +689,10 @@
     </div>
     <div class="modal-title" id="modal-title">✍️ Bewerbung erstellen</div>
     <div class="form-group">
+      <label>📧 E-Mail Adresse des Empfängers</label>
+      <input type="email" id="m-to-email" placeholder="jobs@firma.at">
+    </div>
+    <div class="form-group">
       <label id="m-company-label">Firma / Arbeitgeber</label>
       <input type="text" id="m-company" placeholder="Muster GmbH">
     </div>
@@ -708,12 +712,25 @@
       <label id="m-extra-label">Besondere Hinweise (optional)</label>
       <textarea id="m-extra" placeholder="z.B. Referenznummer, besondere Qualifikationen..."></textarea>
     </div>
+    <div class="form-group">
+      <label>📎 Stellenanzeige hochladen (optional)</label>
+      <div class="upload-zone" style="padding:14px; margin:0;" onclick="document.getElementById('stellenanzeige-input').click()">
+        <div style="font-size:20px;">📄</div>
+        <div style="font-size:13px; font-weight:600; margin-top:4px;" id="stelle-upload-label">Screenshot oder PDF hochladen</div>
+        <div style="font-size:11px; color:var(--text-muted);">KI liest Firma, Stelle und E-Mail automatisch</div>
+      </div>
+      <input type="file" id="stellenanzeige-input" style="display:none" accept=".pdf,.jpg,.jpeg,.png" onchange="handleStellenanzeige(this)">
+      <div id="stelle-loading" style="display:none;" class="ai-loading">
+        <div class="ai-spinner"></div>
+        <span>KI liest Stellenanzeige...</span>
+      </div>
+    </div>
     <button class="btn btn-primary btn-full" onclick="generateBewerbung()" id="gen-btn">
-      🤖 <span id="gen-btn-text">Mit KI erstellen</span>
+      ✍️ <span id="gen-btn-text">Erstellen</span>
     </button>
     <div id="ai-loading" class="ai-loading" style="display:none;">
       <div class="ai-spinner"></div>
-      <span id="ai-loading-text">KI erstellt dein Bewerbungsschreiben...</span>
+      <span id="ai-loading-text">Bewerbungsschreiben wird erstellt...</span>
     </div>
     <div id="bewerbung-result" style="display:none; margin-top:16px;">
       <label id="result-label">Bewerbungsschreiben</label>
@@ -766,7 +783,7 @@ const T = {
     heroSub: 'Dein KI-gestützter Bewerbungsassistent. Erstelle professionelle Bewerbungen mit Claude KI.',
     statEmails: 'E-Mails', statDocs: 'Unterlagen', statSent: 'Gesendet',
     qc1: 'E-Mails prüfen', qc1s: 'AMS & Stellenangebote anzeigen',
-    qc2: 'Neu bewerben', qc2s: 'KI erstellt dein Schreiben',
+    qc2: 'Neu bewerben', qc2s: 'Bewerbung erstellen',
     qc3: 'Unterlagen', qc3s: 'Lebenslauf & Zertifikate',
     qc4: 'QR-Code', qc4s: 'App mit anderen teilen',
     hintTitle: '💡 Hinweis',
@@ -777,7 +794,7 @@ const T = {
     docsTitle: 'Unterlagen',
     uploadTitle: 'Datei hochladen', uploadSub: 'PDF, DOCX, JPG — tippen zum Auswählen',
     settingsTitle: 'Einstellungen',
-    sKI: 'KI-Einstellungen', sAPIKey: 'Claude API-Schlüssel', sAPIKeySub: 'Von console.anthropic.com',
+    sKI: 'API-Einstellungen', sAPIKey: 'Claude API-Schlüssel', sAPIKeySub: 'Von console.anthropic.com',
     sEmailTitle: 'E-Mail Konto', sEmailLabel: 'E-Mail Adresse (GMX)',
     sNameLabel: 'Dein vollständiger Name', sAddrLabel: 'Adresse', sPhoneLabel: 'Telefon',
     sApp: 'App', sDark: 'Dark Mode', sLang: 'Englisch', sTTS: 'Text-to-Speech',
@@ -789,8 +806,8 @@ const T = {
     mCompany: 'Firma / Arbeitgeber', mJob: 'Stelle / Position',
     mContact: 'Ansprechperson', mAddr: 'Adresse der Firma',
     mExtra: 'Besondere Hinweise (optional)',
-    genBtnText: 'Mit KI erstellen',
-    aiLoading: 'KI erstellt dein Bewerbungsschreiben...',
+    genBtnText: 'Erstellen',
+    aiLoading: 'Bewerbungsschreiben wird erstellt...',
     resultLabel: 'Bewerbungsschreiben',
     ttsLabel: 'Vorlesen',
     tabHome: 'Home', tabEmails: 'E-Mails', tabDocs: 'Unterlagen',
@@ -809,10 +826,10 @@ const T = {
   en: {
     appTitle: 'Job Application App',
     heroTitle: '👋 Welcome!',
-    heroSub: 'Your AI-powered job application assistant. Create professional applications with Claude AI.',
+    heroSub: 'Dein digitaler Bewerbungsassistent. Erstelle professionelle Bewerbungen schnell und einfach.',
     statEmails: 'Emails', statDocs: 'Documents', statSent: 'Sent',
     qc1: 'Check Emails', qc1s: 'View AMS & job offers',
-    qc2: 'New Application', qc2s: 'AI creates your letter',
+    qc2: 'New Application', qc2s: 'Create application',
     qc3: 'Documents', qc3s: 'CV & Certificates',
     qc4: 'QR Code', qc4s: 'Share app with others',
     hintTitle: '💡 Note',
@@ -835,8 +852,8 @@ const T = {
     mCompany: 'Company / Employer', mJob: 'Position / Role',
     mContact: 'Contact Person', mAddr: 'Company Address',
     mExtra: 'Additional Notes (optional)',
-    genBtnText: 'Create with AI',
-    aiLoading: 'AI is creating your cover letter...',
+    genBtnText: 'Create',
+    aiLoading: 'Creating your cover letter...',
     resultLabel: 'Cover Letter',
     ttsLabel: 'Read aloud',
     tabHome: 'Home', tabEmails: 'Emails', tabDocs: 'Documents',
@@ -890,7 +907,7 @@ function showPage(name) {
 // ============ LANGUAGE ============
 function applyLang() {
   const lang = state.lang;
-  document.getElementById('lang-flag').textContent = lang === 'de' ? '🇩🇪' : '🇬🇧';
+  document.getElementById('lang-flag').textContent = lang === 'de' ? 'DE' : 'EN';
   document.getElementById('lang-toggle').checked = lang === 'en';
   // Apply all text
   const el = (id) => document.getElementById(id);
@@ -1111,6 +1128,7 @@ function bewerbenFromEmail() {
   const e = state.currentEmail;
   if (!e) return;
   closeEmailModal();
+  if (document.getElementById('m-to-email')) document.getElementById('m-to-email').value = e.email || '';
   document.getElementById('m-company').value = e.company || '';
   document.getElementById('m-job').value = e.job || '';
   document.getElementById('m-contact').value = e.contact || '';
@@ -1222,8 +1240,8 @@ async function generateBewerbung() {
   document.getElementById('gen-btn').disabled = true;
 
   const systemPrompt = isDE
-    ? `Du bist ein professioneller Bewerbungsassistent auf Deutsch. Erstelle ein formelles, professionelles Bewerbungsschreiben auf Deutsch im österreichischen Stil. Halte es präzise (ca. 250-350 Wörter). Gib NUR den reinen Brieftext aus, keine Erklärungen.`
-    : `You are a professional job application assistant. Create a formal, professional cover letter in English. Keep it concise (about 250-350 words). Output ONLY the letter text, no explanations.`;
+    ? `Du bist ein professioneller Bewerbungsassistent auf Deutsch. Erstelle ein formelles, professionelles Bewerbungsschreiben auf Deutsch im österreichischen Stil. Halte es präzise (ca. 250-350 Wörter). Gib NUR den reinen Brieftext aus, keine Erklärungen, keine Hinweise auf KI oder Software.`
+    : `You are a professional job application assistant. Create a formal, professional cover letter in English. Keep it concise (about 250-350 words). Output ONLY the letter text, no explanations, no mentions of AI or software.`;
 
   const userPrompt = isDE
     ? `Erstelle ein Bewerbungsschreiben mit diesen Daten:
@@ -1327,40 +1345,128 @@ async function sendEmail() {
   if (!text) return;
   const company = document.getElementById('m-company').value;
   const job = document.getElementById('m-job').value;
-  const subject = state.lang === 'de' ? `Bewerbung als ${job} bei ${company}` : `Application for ${job} at ${company}`;
-  
+  const toEmail = document.getElementById('m-to-email') ? document.getElementById('m-to-email').value : '';
+  const subject = `Bewerbung als ${job}`;
+  const recipientEmail = toEmail || (state.currentEmail ? state.currentEmail.email : '');
+
+  if (!recipientEmail) {
+    showToast('⚠️ Bitte E-Mail Adresse des Empfängers eingeben!');
+    return;
+  }
+
   if (state.emailAddr && state.emailPass) {
     showToast('📤 Sende E-Mail...');
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000);
       const r = await fetch(BACKEND + '/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           email: state.emailAddr,
           password: state.emailPass,
-          to: state.currentEmail ? state.currentEmail.email : state.emailAddr,
+          to: recipientEmail,
           subject: subject,
           text: text
         })
       });
+      clearTimeout(timeout);
       const data = await r.json();
       if (data.success) {
         showToast(t('toastSent'));
+        state.sentCount++;
+        save(); updateStats();
       } else {
         showToast('❌ Fehler: ' + (data.error || 'Unbekannt'));
-        return;
       }
     } catch(e) {
-      showToast('❌ Fehler: ' + e.message);
-      return;
+      if (e.name === 'AbortError') {
+        showToast('❌ Timeout — bitte nochmal versuchen');
+      } else {
+        const mailto = `mailto:${recipientEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+        window.open(mailto);
+        showToast(t('toastSent'));
+        state.sentCount++;
+        save(); updateStats();
+      }
     }
   } else {
-    const mailto = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
-    window.location.href = mailto;
+    const mailto = `mailto:${recipientEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+    window.open(mailto);
     showToast(t('toastSent'));
+    state.sentCount++;
+    save(); updateStats();
   }
-  state.sentCount++;
-  save(); updateStats();
+}
+
+async function handleStellenanzeige(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const key = state.apiKey;
+  if (!key) { showToast('⚠️ API-Schlüssel in Einstellungen eingeben!'); return; }
+  
+  document.getElementById('stelle-loading').style.display = 'flex';
+  document.getElementById('stelle-upload-label').textContent = file.name;
+
+  const reader = new FileReader();
+  reader.onload = async (ev) => {
+    const base64 = ev.target.result.split(',')[1];
+    const isImage = file.type.startsWith('image');
+    const isPDF = file.type === 'application/pdf';
+
+    try {
+      let messages;
+      if (isImage) {
+        messages = [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: file.type, data: base64 } },
+            { type: 'text', text: 'Lies diese Stellenanzeige und extrahiere: Firmenname, Stelle/Position, Name der Ansprechperson (wenn vorhanden), E-Mail Adresse (wenn vorhanden), Adresse der Firma (wenn vorhanden). Antworte NUR mit JSON: {"company":"...","job":"...","contact":"...","email":"...","address":"..."}' }
+          ]
+        }];
+      } else {
+        messages = [{
+          role: 'user',
+          content: [
+            { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } },
+            { type: 'text', text: 'Lies diese Stellenanzeige und extrahiere: Firmenname, Stelle/Position, Name der Ansprechperson (wenn vorhanden), E-Mail Adresse (wenn vorhanden), Adresse der Firma (wenn vorhanden). Antworte NUR mit JSON: {"company":"...","job":"...","contact":"...","email":"...","address":"..."}' }
+          ]
+        }];
+      }
+
+      const r = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 500, messages })
+      });
+
+      const data = await r.json();
+      if (data.content && data.content[0]) {
+        const text = data.content[0].text;
+        const clean = text.replace(/```json|```/g, '').trim();
+        const parsed = JSON.parse(clean);
+        if (parsed.company) document.getElementById('m-company').value = parsed.company;
+        if (parsed.job) document.getElementById('m-job').value = parsed.job;
+        if (parsed.contact) document.getElementById('m-contact').value = parsed.contact;
+        if (parsed.address) document.getElementById('m-addr').value = parsed.address;
+        if (parsed.email && document.getElementById('m-to-email')) {
+          document.getElementById('m-to-email').value = parsed.email;
+        }
+        showToast('✅ Stellenanzeige gelesen!');
+      }
+    } catch(e) {
+      showToast('❌ Fehler beim Lesen: ' + e.message);
+    }
+    document.getElementById('stelle-loading').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
 }
 
 function copyText() {
