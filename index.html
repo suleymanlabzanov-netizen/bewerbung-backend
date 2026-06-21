@@ -1348,74 +1348,33 @@ async function sendEmail() {
   const text = document.getElementById('bewerbung-text').value;
   if (!text) return;
   const job = document.getElementById('m-job').value;
+  const company = document.getElementById('m-company').value;
   const toEmail = document.getElementById('m-to-email') ? document.getElementById('m-to-email').value : '';
   const recipientEmail = toEmail || (state.currentEmail ? state.currentEmail.email : '');
-  const subject = `Bewerbung als ${job}`;
 
   if (!recipientEmail) {
     showToast('⚠️ Bitte E-Mail Adresse des Empfängers eingeben!');
     return;
   }
 
-  if (!state.emailAddr || !state.emailPass) {
-    showToast('⚠️ GMX E-Mail und Passwort in Einstellungen eingeben!');
-    return;
-  }
-
   const sendBtn = document.getElementById('send-btn');
   if (sendBtn) sendBtn.disabled = true;
-  showToast('⏳ Server wird gestartet...');
+  showToast('📤 Sende E-Mail...');
 
   try {
-    // Wake up backend first
-    try { await fetch(BACKEND + '/'); } catch(e) {}
-    await new Promise(r => setTimeout(r, 3000));
-    showToast('📤 Sende E-Mail...');
-    const attachments = [];
-    state.docFiles = state.docFiles || {};
-
-    if (state.docFiles.ll) {
-      attachments.push({
-        filename: state.docFiles.ll.name,
-        content: state.docFiles.ll.data.split(',')[1]
-      });
-    }
-    if (state.docFiles.zert) {
-      attachments.push({
-        filename: state.docFiles.zert.name,
-        content: state.docFiles.zert.data.split(',')[1]
-      });
-    }
-    if (state.docFiles.bew) {
-      attachments.push({
-        filename: state.docFiles.bew.name,
-        content: state.docFiles.bew.data.split(',')[1]
-      });
-    }
-
-    const r = await fetch(BACKEND + '/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: state.emailAddr,
-        password: state.emailPass,
-        to: recipientEmail,
-        subject: subject,
-        text: text,
-        attachments: attachments
-      })
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email: recipientEmail,
+      job: job,
+      company: company,
+      name: state.userName || 'Suleyman Labzanov',
+      message: text
     });
-
-    const data = await r.json();
-    if (data.success) {
-      showToast('✅ E-Mail erfolgreich gesendet!');
-      state.sentCount++;
-      save(); updateStats();
-    } else {
-      showToast('❌ Fehler: ' + (data.error || 'Unbekannt'));
-    }
+    showToast('✅ E-Mail erfolgreich gesendet!');
+    state.sentCount++;
+    save(); updateStats();
   } catch(e) {
-    showToast('❌ Verbindungsfehler: ' + e.message);
+    showToast('❌ Fehler: ' + (e.text || e.message || JSON.stringify(e)));
   }
 
   if (sendBtn) sendBtn.disabled = false;
