@@ -1,14 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const app = express();
-
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  if (req.method === 'OPTIONS') return res.sendStatus(200);
-  next();
-});
 const Imap = require('imap');
 const { simpleParser } = require('mailparser');
 const nodemailer = require('nodemailer');
@@ -111,13 +102,13 @@ app.post('/send', (req, res) => {
 
   const transporter = nodemailer.createTransport({
     host: 'mail.gmx.net',
-    port: 587,
-    secure: false,
+    port: 465,
+    secure: true,
     auth: { user: email, pass: password },
     tls: { rejectUnauthorized: false },
-    connectionTimeout: 15000,
-    greetingTimeout: 10000,
-    socketTimeout: 20000
+    connectionTimeout: 20000,
+    greetingTimeout: 15000,
+    socketTimeout: 25000
   });
 
   const mailOptions = {
