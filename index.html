@@ -12,6 +12,7 @@
 <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiQmV3ZXJidW5ncy1Bc3Npc3RlbnQiLCJzaG9ydF9uYW1lIjoiQmV3ZXJidW5nIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzE4NUZBNSIsInRoZW1lX2NvbG9yIjoiIzE4NUZBNSIsInN0YXJ0X3VybCI6Ii4iLCJpY29ucyI6W3sic3JjIjoiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCd2NtVnpaWEoyWlVGemNHeGhZMlUyTUhzZ1kyeGhjM005SW1WdVlXSnNaU0lnWTJ4aGMzTTlJbXh2WTJGc0lpQjRiV3h1Y3owaWFIUjBjRG92TDNkM2R5NTNNeTV2Y21jdmRqRXZjMlZ5ZG1WeUlpQjRiV3h1Y3owaWFIUjBjRG92TDNkM2R5NTNNeTV2Y21jdmRqRXZjSE5wZEdWa0lqNDhjM1I1YkdVK0xtcHZiMjRnZW1odmJTQnBiblJsY201aGJDMXphWHBsT2pBeU1BcHdiR0Y0T2pJd0NIUmxlSFF0WW14dllXUTZJakV0TVRndE5UQXRJSHR3Y21VdFpXNWhZbXhsWkMxc2IyZHZPakl3ZlR3dmMzUjViR1UrUEM5emRtYysiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCIsInNpemVzIjoiMTkyeDE5MiJ9XX0=">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
   :root {
     --blue: #185FA5;
@@ -768,6 +769,9 @@
 <script>
 // ============ STATE ============
 const BACKEND = 'https://bewerbung-backend-zcw1.onrender.com';
+const EMAILJS_SERVICE_ID = 'service_zi7r49c';
+const EMAILJS_TEMPLATE_ID = 'template_3wfoobp';
+const EMAILJS_PUBLIC_KEY = 'HsCftMpJ6O9cav6COhFom';
 
 let state = {
   dark: false, lang: 'de',
