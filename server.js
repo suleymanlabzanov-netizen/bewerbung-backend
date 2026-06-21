@@ -94,25 +94,25 @@ app.post('/emails', (req, res) => {
 });
 
 app.post('/send', (req, res) => {
-  const { email, password, to, subject, text, attachments } = req.body;
+  const { email, password, to, subject, text, attachments, gmailUser, gmailPass } = req.body;
 
-  if (!email || !password || !to) {
+  if (!to) {
     return res.status(400).json({ error: 'Fehlende Daten' });
   }
+  
+  const senderUser = gmailUser || email;
+  const senderPass = gmailPass || password;
 
   const transporter = nodemailer.createTransport({
-    host: 'mail.gmx.net',
-    port: 465,
-    secure: true,
-    auth: { user: email, pass: password },
-    tls: { rejectUnauthorized: false },
-    connectionTimeout: 20000,
-    greetingTimeout: 15000,
-    socketTimeout: 25000
+    service: 'gmail',
+    auth: { 
+      user: gmailUser,
+      pass: gmailPass
+    }
   });
 
   const mailOptions = {
-    from: email,
+    from: senderUser,
     to: to,
     subject: subject,
     text: text
