@@ -768,7 +768,8 @@
 
 <script>
 // ============ STATE ============
-const BACKEND = 'https://bewerbung-backend-zcw1.onrender.com';
+// Auf die IP-Adresse deines Laptops im lokalen WLAN umgestellt:
+const BACKEND = 'http://192.168.0.36:3000';
 const GMAIL_USER = 'suleyman.labzanov@gmail.com';
 const GMAIL_PASS = 'zhgb ppjh lwrx xzol';
 const EMAILJS_SERVICE_ID = 'service_zi7r49c';
@@ -826,7 +827,6 @@ const T = {
     toastShared: '✅ Link kopiert!', toastCleared: '✅ Alle Daten gelöscht',
     toastUploaded: '✅ Datei hochgeladen!',
     pdfBtn: '📄 PDF', sendBtn: '📧 Senden', copyBtn: '📋 Kopieren',
-    bewerbBtn: '✍️ Bewerben',
     badgeAMS: 'AMS Wien', badgeJob: 'Stellenangebot', badgeOther: 'Sonstige',
   },
   en: {
@@ -872,7 +872,6 @@ const T = {
     toastShared: '✅ Link copied!', toastCleared: '✅ All data deleted',
     toastUploaded: '✅ File uploaded!',
     pdfBtn: '📄 PDF', sendBtn: '📧 Send', copyBtn: '📋 Copy',
-    bewerbBtn: '✍️ Apply',
     badgeAMS: 'AMS Vienna', badgeJob: 'Job Offer', badgeOther: 'Other',
   }
 };
@@ -915,7 +914,6 @@ function applyLang() {
   const lang = state.lang;
   document.getElementById('lang-flag').textContent = lang === 'de' ? 'DE' : 'EN';
   document.getElementById('lang-toggle').checked = lang === 'en';
-  // Apply all text
   const el = (id) => document.getElementById(id);
   const set = (id, key, html = false) => { const e = el(id); if (e) { if (html) e.innerHTML = t(key); else e.textContent = t(key); } };
   set('nav-title', 'appTitle');
@@ -1026,7 +1024,7 @@ function clearAll() {
   showToast(t('toastCleared'));
 }
 
-// ============ EMAILS ============
+// ============ EMAILS FROM LOCAL SERVER ============
 async function fetchEmailsFromServer() {
   const email = state.emailAddr;
   const password = state.emailPass;
@@ -1039,6 +1037,7 @@ async function fetchEmailsFromServer() {
   if (btn) btn.disabled = true;
   showToast('📥 Lade E-Mails...');
   try {
+    // Greift jetzt direkt auf deinen Laptop-Server zu
     const r = await fetch(BACKEND + '/emails', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1062,7 +1061,7 @@ async function fetchEmailsFromServer() {
   if (btn) btn.disabled = false;
 }
 
-// ============ EMAILS ============
+// ============ DEMO DATA ============
 const DEMO_EMAILS_DE = [
   { id: 1, type: 'ams', sender: 'AMS Wien', email: 'ams@ams.at', subject: 'Neue Stellenvermittlung — IT-Techniker', date: '17.06.2026', body: 'Sehr geehrte/r Bewerber/in,\n\nwir haben eine passende Stelle für Sie gefunden:\n\nFirma: TechSolutions GmbH\nStelle: IT-Techniker/in\nAdresse: Mariahilfer Straße 45, 1060 Wien\nAnsprechperson: Mag. Sandra Huber\nReferenz: AMS-2026-4512\n\nBitte bewerben Sie sich bis 30.06.2026.\n\nMit freundlichen Grüßen\nIhr AMS Wien Team', company: 'TechSolutions GmbH', job: 'IT-Techniker/in', contact: 'Mag. Sandra Huber', addr: 'Mariahilfer Straße 45, 1060 Wien' },
   { id: 2, type: 'job', sender: 'Karriere.at', email: 'jobs@karriere.at', subject: 'Ihr Inserat: Lagerarbeiter/in gesucht', date: '16.06.2026', body: 'Guten Tag,\n\nWir suchen ab sofort:\n\nFirma: LogiWien GmbH\nStelle: Lagerarbeiter/in (Vollzeit)\nAdresse: Laxenburger Straße 200, 1100 Wien\nAnsprechperson: Herr Karl Bauer\nGehalt: ab €1.800 brutto\n\nBewerbung bitte an: jobs@logiwien.at', company: 'LogiWien GmbH', job: 'Lagerarbeiter/in', contact: 'Herr Karl Bauer', addr: 'Laxenburger Straße 200, 1100 Wien' },
@@ -1190,7 +1189,6 @@ function viewDoc(type) {
   state.docFiles = state.docFiles || {};
   const d = state.docFiles[type];
   if (!d || !d.data) return;
-  // Show inline viewer with close button
   const overlay = document.getElementById('doc-viewer-overlay');
   const iframe = document.getElementById('doc-viewer-iframe');
   if (overlay && iframe) {
@@ -1296,7 +1294,6 @@ ${extra ? 'Notes: ' + extra : ''}`;
       const text = data.content[0].text;
       document.getElementById('bewerbung-text').value = text;
       document.getElementById('bewerbung-result').style.display = 'block';
-      // Store last generated data for PDF
       state._lastBewerbung = { company, job, contact, addr, text };
     } else {
       showToast(t('toastAPIErr'));
@@ -1345,7 +1342,7 @@ function createPDF() {
   save(); updateStats();
 }
 
-// ============ SEND EMAIL ============
+// ============ SEND EMAIL TO LOCAL SERVER ============
 async function sendEmail() {
   const text = document.getElementById('bewerbung-text').value;
   if (!text) return;
@@ -1369,6 +1366,7 @@ async function sendEmail() {
     if (state.docFiles.zert) attachments.push({ filename: state.docFiles.zert.name, content: state.docFiles.zert.data.split(',')[1] });
     if (state.docFiles.bew) attachments.push({ filename: state.docFiles.bew.name, content: state.docFiles.bew.data.split(',')[1] });
 
+    // Sendet die Daten nun an dein lokales Node.js-Backend
     const r = await fetch(BACKEND + '/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1397,6 +1395,7 @@ async function sendEmail() {
   if (sendBtn) sendBtn.disabled = false;
 }
 
+// ============ STELLENANZEIGE KI ANALYSE ============
 async function handleStellenanzeige(input) {
   const file = input.files[0];
   if (!file) return;
@@ -1410,7 +1409,6 @@ async function handleStellenanzeige(input) {
   reader.onload = async (ev) => {
     const base64 = ev.target.result.split(',')[1];
     const isImage = file.type.startsWith('image');
-    const isPDF = file.type === 'application/pdf';
 
     try {
       let messages;
@@ -1446,7 +1444,8 @@ async function handleStellenanzeige(input) {
       const data = await r.json();
       if (data.content && data.content[0]) {
         const text = data.content[0].text;
-        const clean = text.replace(/```json|```/g, '').trim();
+        const clean = text.replace(/```json|
+```/g, '').trim();
         const parsed = JSON.parse(clean);
         if (parsed.company) document.getElementById('m-company').value = parsed.company;
         if (parsed.job) document.getElementById('m-job').value = parsed.job;
@@ -1455,99 +1454,13 @@ async function handleStellenanzeige(input) {
         if (parsed.email && document.getElementById('m-to-email')) {
           document.getElementById('m-to-email').value = parsed.email;
         }
-        showToast('✅ Stellenanzeige gelesen!');
+        showToast('✅ Daten erfolgreich aus Anzeige extrahiert!');
       }
     } catch(e) {
-      showToast('❌ Fehler beim Lesen: ' + e.message);
+      showToast('❌ Analyse-Fehler: ' + e.message);
     }
     document.getElementById('stelle-loading').style.display = 'none';
   };
   reader.readAsDataURL(file);
-  input.value = '';
 }
-
-function copyText() {
-  const text = document.getElementById('bewerbung-text').value;
-  if (!text) return;
-  navigator.clipboard.writeText(text).then(() => showToast(t('toastCopied'))).catch(() => {
-    const ta = document.createElement('textarea');
-    ta.value = text; document.body.appendChild(ta);
-    ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-    showToast(t('toastCopied'));
-  });
-}
-
-// ============ QR CODE ============
-function generateQR() {
-  const div = document.getElementById('qr-code');
-  if (!div) return;
-  div.innerHTML = '';
-  const url = window.location.href.split('?')[0];
-  document.getElementById('qr-url-display').textContent = url;
-  try {
-    new QRCode(div, {
-      text: url,
-      width: 180, height: 180,
-      colorDark: '#185FA5', colorLight: '#ffffff',
-      correctLevel: QRCode.CorrectLevel.M
-    });
-  } catch(e) {
-    div.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:20px;">QR-Code konnte nicht geladen werden</p>';
-  }
-}
-function shareApp() {
-  const url = window.location.href.split('?')[0];
-  if (navigator.share) {
-    navigator.share({ title: t('appTitle'), url }).catch(() => {});
-  } else {
-    navigator.clipboard.writeText(url).then(() => showToast(t('toastShared'))).catch(() => showToast(t('toastShared')));
-  }
-}
-
-// ============ STATS ============
-function updateStats() {
-  document.getElementById('stat-emails').textContent = state.emails.length;
-  state.docFiles = state.docFiles || {};
-  document.getElementById('stat-docs').textContent = Object.keys(state.docFiles).length;
-  document.getElementById('stat-sent').textContent = state.sentCount || 0;
-}
-
-// ============ TOAST ============
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
-}
-
-// ============ CLOSE MODALS ON BACKDROP ============
-document.getElementById('bewerbung-modal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
-document.getElementById('email-modal').addEventListener('click', function(e) {
-  if (e.target === this) closeEmailModal();
-});
-
-// ============ DRAG & DROP ============
-const zone = document.getElementById('upload-zone');
-if (zone) {
-  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
-  zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
-  zone.addEventListener('drop', e => {
-    e.preventDefault(); zone.classList.remove('drag');
-    const fake = { files: e.dataTransfer.files };
-    handleFileUpload(fake);
-  });
-}
-
-// ============ KEEP ALIVE ============
-function keepAlive() {
-  fetch(BACKEND + '/').catch(() => {});
-}
-setInterval(keepAlive, 10 * 60 * 1000);
-keepAlive();
-
-// ============ START ============
-init();
 </script>
-</body>
-</html>
