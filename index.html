@@ -769,6 +769,8 @@
 <script>
 // ============ STATE ============
 const BACKEND = 'https://bewerbung-backend-zcw1.onrender.com';
+const GMAIL_USER = 'suleyman.labzanov@gmail.com';
+const GMAIL_PASS = 'zhgb ppjh lwrx xzol';
 const EMAILJS_SERVICE_ID = 'service_zi7r49c';
 const EMAILJS_TEMPLATE_ID = 'template_3wfoobp';
 const EMAILJS_PUBLIC_KEY = 'eOXGPGLDXzYYK5wZo';
@@ -1348,7 +1350,6 @@ async function sendEmail() {
   const text = document.getElementById('bewerbung-text').value;
   if (!text) return;
   const job = document.getElementById('m-job').value;
-  const company = document.getElementById('m-company').value;
   const toEmail = document.getElementById('m-to-email') ? document.getElementById('m-to-email').value : '';
   const recipientEmail = toEmail || (state.currentEmail ? state.currentEmail.email : '');
 
@@ -1362,19 +1363,35 @@ async function sendEmail() {
   showToast('📤 Sende E-Mail...');
 
   try {
-    emailjs.init(EMAILJS_PUBLIC_KEY);
-    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      to_email: recipientEmail,
-      job: job,
-      company: company,
-      name: state.userName || 'Suleyman Labzanov',
-      message: text
+    const attachments = [];
+    state.docFiles = state.docFiles || {};
+    if (state.docFiles.ll) attachments.push({ filename: state.docFiles.ll.name, content: state.docFiles.ll.data.split(',')[1] });
+    if (state.docFiles.zert) attachments.push({ filename: state.docFiles.zert.name, content: state.docFiles.zert.data.split(',')[1] });
+    if (state.docFiles.bew) attachments.push({ filename: state.docFiles.bew.name, content: state.docFiles.bew.data.split(',')[1] });
+
+    const r = await fetch(BACKEND + '/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: recipientEmail,
+        subject: `Bewerbung als ${job}`,
+        text: text,
+        gmailUser: GMAIL_USER,
+        gmailPass: GMAIL_PASS,
+        attachments: attachments
+      })
     });
-    showToast('✅ E-Mail erfolgreich gesendet!');
-    state.sentCount++;
-    save(); updateStats();
+
+    const data = await r.json();
+    if (data.success) {
+      showToast('✅ E-Mail erfolgreich gesendet!');
+      state.sentCount++;
+      save(); updateStats();
+    } else {
+      showToast('❌ Fehler: ' + (data.error || 'Unbekannt'));
+    }
   } catch(e) {
-    showToast('❌ Fehler: ' + (e.text || e.message || JSON.stringify(e)));
+    showToast('❌ Verbindungsfehler: ' + e.message);
   }
 
   if (sendBtn) sendBtn.disabled = false;
